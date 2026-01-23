@@ -66,7 +66,7 @@ This project is still very much being actively developed. There is currently no 
 If you can think of any helpful tweaks and even completely new features, please feel free to reach out at `jacobdanielrose@protonmail.com`
 ## Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request with your updates. I'm not the disciplined developer ever so I will probably only start writing tests when I'm finished with the main sections of the project. Feel free to create or include your own tests if you please.
+Contributions are welcome! Please fork the repository and submit a pull request with your updates. I'm not the most disciplined developer ever so I will probably only start writing tests when I'm finished with the main features of the project. Feel free to create or include your own tests if you please.
 
 ## License
 
