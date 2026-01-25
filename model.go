@@ -64,7 +64,7 @@ func initialModel() model {
 	listModel.SetItems(tasks)
 	return model{
 		list:     listModel,
-		editmenu: editmenu.New(),
+		editmenu: editmenu.New(0, 0),
 		state:    stateList,
 		keymap:   newListKeyMap(),
 		styles:   styles,

@@ -69,8 +69,8 @@ func (m model) stateEditUpdate(msg tea.Msg) (model, tea.Cmd) {
 func (m model) editTask() model {
 	m.state = stateEdit
 	task := m.list.SelectedItem().(task.Task)
-	m.editmenu.Title.SetValue(task.Title())
-	m.editmenu.Title.SetCursor(len(task.TitleStr))
+	m.editmenu.TaskTitle.SetValue(task.Title())
+	m.editmenu.TaskTitle.SetCursor(len(task.TitleStr))
 	m.editmenu.Desc.SetValue(task.Description())
 	m.editmenu.Desc.SetCursor(len(task.DescStr))
 	m.editmenu.DatePicker.SetTime(task.DueDate)
@@ -79,7 +79,7 @@ func (m model) editTask() model {
 
 func (m model) newTask() model {
 	m.state = stateEdit
-	m.editmenu.Title.SetValue("New Task")
+	m.editmenu.TaskTitle.SetValue("New Task")
 	m.editmenu.Desc.SetValue("Description")
 	return m
 }
