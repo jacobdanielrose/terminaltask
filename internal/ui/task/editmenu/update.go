@@ -21,11 +21,16 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.focusIdx = (m.focusIdx + 1) % 3
 			m.setFocus()
 		case key.Matches(msg, m.keymap.SaveTask):
+			m.focusIdx = 0
+			m.setFocus()
 			return m, func() tea.Msg {
 				return SaveTaskMsg{
+					m.TaskID,
 					m.TaskTitle.Value(),
 					m.Desc.Value(),
 					m.DatePicker.Time,
+					false,
+					m.IsNew,
 				}
 			}
 		case key.Matches(msg, m.keymap.EscapeEditMode):

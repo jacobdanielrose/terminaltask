@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -12,8 +14,18 @@ func (m model) Init() tea.Cmd {
 }
 
 func main() {
+	cfgDir, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	path := filepath.Join(cfgDir, "terminaltask", "tasks.json")
+	store := NewFileTaskStore(path)
+
+	m := initialModel(store)
+
 	p := tea.NewProgram(
-		initialModel(),
+		m,
 		tea.WithAltScreen(),
 	)
 	if _, err := p.Run(); err != nil {

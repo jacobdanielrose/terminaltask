@@ -17,6 +17,8 @@ var statusMessageStyle = lipgloss.NewStyle().
 	Render
 
 type EnterEditMsg struct{}
+type ToggleDoneMsg struct{ done bool }
+type DeleteMsg struct{}
 
 type TaskDelegate struct {
 	Styles  Styles
@@ -55,7 +57,11 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 			task := m.Items()[index].(Task)
 			task.Done = !task.Done
 			m.SetItem(index, task)
-			return m.NewStatusMessage(statusMessageStyle("Toggled " + title))
+			return tea.Batch(
+				m.NewStatusMessage(statusMessageStyle("Toggled "+title)),
+				func() tea.Msg {
+					return ToggleDoneMsg{}
+				})
 
 		case key.Matches(msg, t.keymap.EditItem):
 			return func() tea.Msg {
@@ -68,7 +74,11 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 			if len(m.Items()) == 0 {
 				t.keymap.RemoveItem.SetEnabled(false)
 			}
-			return m.NewStatusMessage(statusMessageStyle("Deleted " + title))
+			return tea.Batch(
+				m.NewStatusMessage(statusMessageStyle("Deleted "+title)),
+				func() tea.Msg {
+					return DeleteMsg{}
+				})
 		}
 	}
 

@@ -1,9 +1,12 @@
 package main
 
 import (
+	"time"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/google/uuid"
 	"github.com/jacobdanielrose/terminaltask/internal/ui/task"
 	"github.com/jacobdanielrose/terminaltask/internal/ui/task/editmenu"
 )
@@ -21,6 +24,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.editTask(), nil
 	case editmenu.SaveTaskMsg:
 		return m.saveTask(msg), nil
+	case task.ToggleDoneMsg:
+		task := m.list.SelectedItem().(task.Task)
+		index := m.list.Index()
+		m.list.SetItem(index, task)
+		tasks := itemsToTasks(m.list.Items())
+		_ = m.store.Save(tasks)
+		return m, nil
+	case task.DeleteMsg:
+		// deletion in list already happens in the delegate
+		// just need to save to backend here.
+		tasks := itemsToTasks(m.list.Items())
+		_ = m.store.Save(tasks)
+		return m, nil
 	}
 
 	switch m.state {
@@ -33,13 +49,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) saveTask(msg editmenu.SaveTaskMsg) model {
-	task := m.list.SelectedItem().(task.Task)
-	index := m.list.Index()
-	task.TitleStr = msg.Title
-	task.DescStr = msg.Desc
-	task.DueDate = msg.Date
-	m.list.SetItem(index, task)
+	task := task.Task{
+		TitleStr: msg.Title,
+		DescStr:  msg.Desc,
+		DueDate:  msg.Date,
+		Done:     msg.Done,
+	}
+	task.SetID(msg.TaskID)
+
+	index := -1
+	if len(m.list.Items()) != 0 && !msg.IsNew {
+		index = m.list.Index()
+		m.list.SetItem(index, task)
+	} else {
+		m.list.InsertItem(index, task)
+	}
+
 	m.state = stateList
+	tasks := itemsToTasks(m.list.Items())
+	_ = m.store.Save(tasks)
 	return m
 }
 
@@ -69,6 +97,8 @@ func (m model) stateEditUpdate(msg tea.Msg) (model, tea.Cmd) {
 func (m model) editTask() model {
 	m.state = stateEdit
 	task := m.list.SelectedItem().(task.Task)
+	m.editmenu.IsNew = false
+	m.editmenu.TaskID = task.GetID()
 	m.editmenu.TaskTitle.SetValue(task.Title())
 	m.editmenu.TaskTitle.SetCursor(len(task.TitleStr))
 	m.editmenu.Desc.SetValue(task.Description())
@@ -79,7 +109,15 @@ func (m model) editTask() model {
 
 func (m model) newTask() model {
 	m.state = stateEdit
-	m.editmenu.TaskTitle.SetValue("New Task")
-	m.editmenu.Desc.SetValue("Description")
+	taskID := uuid.New()
+	m.editmenu.IsNew = true
+	m.editmenu.TaskID = taskID
+	m.editmenu.TaskTitle.SetValue("")
+	m.editmenu.Desc.SetValue("")
+	m.editmenu.TaskTitle.Placeholder = "New Task"
+	m.editmenu.Desc.Placeholder = "Description"
+	m.editmenu.TaskTitle.SetCursor(0)
+	m.editmenu.Desc.SetCursor(0)
+	m.editmenu.DatePicker.SetTime(time.Now())
 	return m
 }

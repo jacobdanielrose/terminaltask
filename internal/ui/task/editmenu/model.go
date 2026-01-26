@@ -6,24 +6,29 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/textinput"
 	datepicker "github.com/ethanefung/bubble-datepicker"
+	"github.com/google/uuid"
 )
 
 type EscapeEditMsg struct{}
 type SaveTaskMsg struct {
-	Title string
-	Desc  string
-	Date  time.Time
+	TaskID uuid.UUID
+	Title  string
+	Desc   string
+	Date   time.Time
+	Done   bool
+	IsNew  bool
 }
 
 type Model struct {
 	showTitle  bool
 	showHelp   bool
 	Title      string
+	TaskID     uuid.UUID
 	TaskTitle  textinput.Model
 	Desc       textinput.Model
 	focusIdx   int // 0=title, 1=desc, 2=duedate
 	keymap     *EditTaskKeyMap
-	isNew      bool
+	IsNew      bool
 	styles     Styles
 	help       help.Model
 	width      int
