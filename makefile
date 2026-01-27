@@ -24,7 +24,7 @@ release:
 		exit 1; \
 	fi
 	git tag $(VERSION)
-	git push origin $(VERSION)s
+	git push origin $(VERSION)
 	make build VERSION=$(VERSION)
 
 test:

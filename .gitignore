@@ -36,3 +36,5 @@ bin/
 *.tmp
 coverage.*
 .DS_Store
+# Added by goreleaser init:
+dist/
