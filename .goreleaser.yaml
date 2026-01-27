@@ -16,12 +16,18 @@ before:
     #- go generate ./...
 
 builds:
+  - dir: ./cmd/terminaltask
   - env:
       - CGO_ENABLED=0
     goos:
       - linux
       - windows
       - darwin
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildDate={{.Date}}
 
 archives:
   - formats: [tar.gz]
