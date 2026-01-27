@@ -11,7 +11,11 @@ import (
 	"github.com/jacobdanielrose/terminaltask/internal/storage"
 )
 
-var version = "dev"
+var (
+	version   = "dev"
+	commit    = "dev"
+	buildDate = "dev"
+)
 
 func main() {
 
@@ -19,7 +23,8 @@ func main() {
 	flag.Parse()
 
 	if *ver {
-		fmt.Println("terminaltask v0.1.0-alpha")
+		fmt.Printf("terminaltask v%s (commit=%s, built=%s)\n",
+			version, commit, buildDate)
 		return
 	}
 
