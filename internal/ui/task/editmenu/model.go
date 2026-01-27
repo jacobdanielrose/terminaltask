@@ -18,6 +18,9 @@ type SaveTaskMsg struct {
 	Done   bool
 	IsNew  bool
 }
+type ErrorMsg struct {
+	ErrorStr string
+}
 
 type Model struct {
 	showTitle  bool
@@ -34,6 +37,7 @@ type Model struct {
 	width      int
 	height     int
 	DatePicker datepicker.Model
+	statusMsg  string
 }
 
 func New(width, height int) Model {
@@ -63,6 +67,7 @@ func New(width, height int) Model {
 		width:      width,
 		height:     height,
 		DatePicker: datepicker.New(time.Now()),
+		statusMsg:  "",
 	}
 }
 

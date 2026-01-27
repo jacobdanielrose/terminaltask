@@ -3,7 +3,6 @@ package task
 import "github.com/charmbracelet/lipgloss"
 
 const (
-	bullet   = "•"
 	ellipsis = "…"
 )
 
@@ -25,6 +24,8 @@ type Styles struct {
 
 	// Characters matching the current filter, if any.
 	FilterMatch lipgloss.Style
+
+	StatusMessage lipgloss.Style
 }
 
 func newTaskStyles() Styles {
@@ -67,5 +68,7 @@ func newTaskStyles() Styles {
 				Foreground(lipgloss.AdaptiveColor{Light: "#A49FA5", Dark: "#777777"}),
 		},
 		FilterMatch: lipgloss.NewStyle().Underline(true),
+		StatusMessage: lipgloss.NewStyle().
+			Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}),
 	}
 }

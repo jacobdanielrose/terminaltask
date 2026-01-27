@@ -13,6 +13,8 @@ type Styles struct {
 	Focused lipgloss.Style
 	Blurred lipgloss.Style
 	Normal  lipgloss.Style
+
+	StatusMessage lipgloss.Style
 }
 
 func DefaultStyles() (s Styles) {
@@ -33,6 +35,9 @@ func DefaultStyles() (s Styles) {
 	s.Normal = lipgloss.NewStyle().
 		Foreground(lipgloss.AdaptiveColor{Light: "#1a1a1a", Dark: "#dddddd"}).
 		Padding(0, 0, 0, 2)
+
+	s.StatusMessage = lipgloss.NewStyle().
+		Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"})
 
 	return s
 }

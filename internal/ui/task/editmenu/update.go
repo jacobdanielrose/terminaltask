@@ -1,26 +1,43 @@
 package editmenu
 
 import (
+	"time"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	datepicker "github.com/ethanefung/bubble-datepicker"
 )
 
+type clearStatusMsg struct{}
+
 func (m Model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+func (m *Model) showStatus(msg string) tea.Cmd {
+	m.statusMsg = msg
+	return tea.Tick(1*time.Second, func(t time.Time) tea.Msg {
+		return clearStatusMsg{}
+	})
+}
+
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
-	// Is it a key press?
+	case clearStatusMsg:
+		m.statusMsg = ""
+		return m, nil
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keymap.SaveField):
 			m.focusIdx = (m.focusIdx + 1) % 3
 			m.setFocus()
 		case key.Matches(msg, m.keymap.SaveTask):
+			if m.DatePicker.Time.Before(time.Now().Truncate(24 * time.Hour)) {
+				return m, m.showStatus("You cannot pick a date in the past!")
+			}
 			m.focusIdx = 0
 			m.setFocus()
 			return m, func() tea.Msg {
@@ -66,7 +83,7 @@ func (m *Model) setFocus() {
 		m.Desc.Focus()
 	case 2:
 		m.DatePicker.SelectDate()
-		m.DatePicker.SetFocus(datepicker.FocusHeaderMonth)
+		m.DatePicker.SetFocus(datepicker.FocusCalendar)
 	}
 }
 

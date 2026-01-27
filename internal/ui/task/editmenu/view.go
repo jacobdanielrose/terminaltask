@@ -4,6 +4,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const calendarPadding = 10
+
 func (m Model) View() string {
 
 	var (
@@ -25,6 +27,12 @@ func (m Model) View() string {
 
 	editContent := lipgloss.NewStyle().Height(availHeight).Render(m.editView())
 	sections = append(sections, editContent)
+
+	if m.statusMsg != "" {
+		statusView := m.styles.StatusMessage.Align(lipgloss.Center).Render(m.statusMsg)
+		availHeight -= lipgloss.Height(statusView)
+		sections = append(sections, statusView)
+	}
 
 	if m.showHelp {
 		sections = append(sections, help)
@@ -58,7 +66,6 @@ func (m Model) editView() string {
 	m.Desc.TextStyle = m.styles.Normal
 	m.Desc.PromptStyle = m.styles.Normal
 
-	lipgloss.JoinVertical(0.5)
 	switch m.focusIdx {
 	case 0:
 		m.TaskTitle.TextStyle = m.styles.Normal
@@ -70,14 +77,15 @@ func (m Model) editView() string {
 		//	m.datePicker.Time = m.Duedate
 	}
 
-	titleDescCombo := lipgloss.JoinVertical(lipgloss.Left,
+	calendar := lipgloss.NewStyle().
+		AlignHorizontal(lipgloss.Center).
+		PaddingLeft(calendarPadding).
+		Render(m.DatePicker.View())
+
+	return lipgloss.JoinVertical(lipgloss.Left,
 		m.TaskTitle.View(),
 		m.Desc.View(),
-	)
-
-	return lipgloss.JoinVertical(0.5,
-		titleDescCombo,
-		m.DatePicker.View(),
+		calendar,
 	)
 
 }

@@ -1,15 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/google/uuid"
 	"github.com/jacobdanielrose/terminaltask/internal/ui/task"
 	"github.com/jacobdanielrose/terminaltask/internal/ui/task/editmenu"
 )
+
+var statusMessageStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
+	Render
+
+func (m model) Init() tea.Cmd {
+	return nil
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -68,6 +78,12 @@ func (m model) saveTask(msg editmenu.SaveTaskMsg) model {
 	m.state = stateList
 	tasks := itemsToTasks(m.list.Items())
 	_ = m.store.Save(tasks)
+
+	m.list.NewStatusMessage(
+		statusMessageStyle(
+			fmt.Sprintf("Edited: \"%s\"", task.Title()),
+		),
+	)
 	return m
 }
 

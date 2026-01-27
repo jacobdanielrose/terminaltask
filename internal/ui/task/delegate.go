@@ -59,7 +59,7 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 			task.Done = !task.Done
 			m.SetItem(index, task)
 			return tea.Batch(
-				m.NewStatusMessage(statusMessageStyle("Toggled "+title)),
+				m.NewStatusMessage(statusMessageStyle(fmt.Sprintf("Completed: \"%s\"", title))),
 				func() tea.Msg {
 					return ToggleDoneMsg{}
 				})
@@ -76,7 +76,7 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 				t.keymap.RemoveItem.SetEnabled(false)
 			}
 			return tea.Batch(
-				m.NewStatusMessage(statusMessageStyle("Deleted "+title)),
+				m.NewStatusMessage(statusMessageStyle(fmt.Sprintf("Deleted: \"%s\"", title))),
 				func() tea.Msg {
 					return DeleteMsg{}
 				})

@@ -1,5 +1,6 @@
 .PHONY: build run test lint clean
 
+
 build:
 	go build -o bin/terminaltask ./cmd/terminaltask
 

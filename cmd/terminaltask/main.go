@@ -10,11 +10,18 @@ import (
 	"github.com/jacobdanielrose/terminaltask/internal/storage"
 )
 
-func (m model) Init() tea.Cmd {
-	return nil
-}
+var (
+	version   = "dev" // ldflags overwrites this
+	buildTime = "dev" // ldflags overwrites this
+	commit    = "dev" // optional
+)
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "--version" {
+		fmt.Printf("TerminalTask %s (built %s) (commit %s)\n", version, buildTime, commit)
+		os.Exit(0)
+	}
+
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
 		log.Fatal(err)
