@@ -16,7 +16,7 @@ Ensure you have Go installed (version 1.16 or higher is recommended).
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/terminaltask.git
+   git clone https://github.com/jacobdanielrose/terminaltask.git
    ```
 
 2. Change to the project directory:
