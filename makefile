@@ -25,7 +25,6 @@ release:
 	fi
 	git tag $(VERSION)
 	git push origin $(VERSION)
-	make build VERSION=$(VERSION)
 
 test:
 	go test ./...
