@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -10,16 +11,16 @@ import (
 	"github.com/jacobdanielrose/terminaltask/internal/storage"
 )
 
-var (
-	version   = "dev" // ldflags overwrites this
-	buildTime = "dev" // ldflags overwrites this
-	commit    = "dev" // optional
-)
+var version = "dev"
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "--version" {
-		fmt.Printf("TerminalTask %s (built %s) (commit %s)\n", version, buildTime, commit)
-		os.Exit(0)
+
+	ver := flag.Bool("version", false, "print version")
+	flag.Parse()
+
+	if *ver {
+		fmt.Println("terminaltask v0.1.0-alpha")
+		return
 	}
 
 	cfgDir, err := os.UserConfigDir()
