@@ -25,12 +25,15 @@ func (m Model) View() string {
 		availHeight -= lipgloss.Height(help)
 	}
 
+	if m.statusMsg != "" {
+		availHeight -= lipgloss.Height(m.statusMsg)
+	}
+
 	editContent := lipgloss.NewStyle().Height(availHeight).Render(m.editView())
 	sections = append(sections, editContent)
 
 	if m.statusMsg != "" {
 		statusView := m.styles.StatusMessage.Align(lipgloss.Center).Render(m.statusMsg)
-		availHeight -= lipgloss.Height(statusView)
 		sections = append(sections, statusView)
 	}
 
