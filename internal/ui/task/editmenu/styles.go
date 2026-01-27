@@ -4,11 +4,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const (
-	bullet   = "•"
-	ellipsis = "…"
-)
-
 type Styles struct {
 	TitleBar lipgloss.Style
 	Title    lipgloss.Style

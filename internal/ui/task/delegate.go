@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -17,7 +18,7 @@ var statusMessageStyle = lipgloss.NewStyle().
 	Render
 
 type EnterEditMsg struct{}
-type ToggleDoneMsg struct{ done bool }
+type ToggleDoneMsg struct{}
 type DeleteMsg struct{}
 
 type TaskDelegate struct {
@@ -172,13 +173,16 @@ func (t TaskDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		dateStyle = dateStyle.Inherit(dateStyle).Strikethrough(false)
 	}
 
-	fmt.Fprintf(
+	n, err := fmt.Fprintf(
 		w,
 		"%s\n%s\n%s",
 		titleStyle.Render(title),
 		descStyle.Render(desc),
 		dateStyle.Render(date),
-	) //nolint: errcheck
+	)
+	if err != nil {
+		log.Error("Failed to render delegate", "err", err, "bytes", n)
+	}
 }
 
 func (t TaskDelegate) ShortHelp() []key.Binding {
