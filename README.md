@@ -14,25 +14,35 @@ TerminalTask is a task management application designed to run directly in your t
 
 Ensure you have Go installed (version 1.16 or higher is recommended).
 
+### Building from Source
+
 1. Clone the repository:
-   ```sh
+   ```/dev/null/sh#L1-1
    git clone https://github.com/jacobdanielrose/terminaltask.git
    ```
 
 2. Change to the project directory:
-   ```sh
+   ```/dev/null/sh#L1-1
    cd terminaltask
    ```
 
-3. Build the application:
-   ```sh
-   go build
+3. Build the application using the Makefile:
+   ```/dev/null/sh#L1-1
+   make build
    ```
 
 4. Run the application:
-   ```sh
-   ./terminaltask
+   ```/dev/null/sh#L1-1
+   ./bin/terminaltask
    ```
+
+### Downloading Binaries
+
+For local installation, you can download the pre-built binaries from the GitHub releases section:
+
+- https://github.com/jacobdanielrose/terminaltask/releases
+
+Download the appropriate archive for your OS, extract it, and run the binary.
 
 ## Usage
 
@@ -42,28 +52,28 @@ Ensure you have Go installed (version 1.16 or higher is recommended).
   - Press `n` to create a new task.
   - Use `esc` to exit the edit mode.
   - `ctrl+c` at any time quits the program.
-  - `space` to mark a task as completed
+  - `space` to mark a task as completed.
 
 - **Editing:**
-  - Text input fields for title, description
+  - Text input fields for title, description.
   - [Datepicker](https://github.com/EthanEFung/bubble-datepicker) (thanks EthanEFung!) for selecting the task's due date.
   - Save changes by navigating through fields `enter` and saving `ctrl+s` when done.
-  - To exit the edit menu (without saving) press `esc` 
+  - To exit the edit menu (without saving) press `esc`.
 
 - **Shortcuts:**
-  - `?` to toggle the help menu and view key bindings in the list view
-  - `ctrl+o` to toggle the help menu and view key bindings in the edit view
-
+  - `?` to toggle the help menu and view key bindings in the list view.
+  - `ctrl+o` to toggle the help menu and view key bindings in the edit view.
 
 ## Development
 
-This project is still very much being actively developed. There is currently no persistence (think of this as as pre-alpha), so I plan to add a DB backend to add persistence. Other smaller tweaks and big changes include:
+This project is still very much being actively developed. Planned  tweaks and big changes include:
 
-- Ability to filter out already completed tasks
-- Ability to filter by descriptions
-- Ability to synchronize with an external calDav server (will definitely come last)
+- Ability to filter out already completed tasks.
+- Ability to filter by descriptions.
+- Ability to synchronize with an external calDav server (will definitely come last).
 
-If you can think of any helpful tweaks and even completely new features, please feel free to reach out at `jacobdanielrose@protonmail.com`
+If you can think of any helpful tweaks and even completely new features, please feel free to reach out at `jacobdanielrose@protonmail.com`.
+
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your updates. I'm not the most disciplined developer ever so I will probably only start writing tests when I'm finished with the main features of the project. Feel free to create or include your own tests if you please.
