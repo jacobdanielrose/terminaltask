@@ -8,7 +8,7 @@ type listKeyMap struct {
 	NewItem key.Binding
 }
 
-func newListKeyMap() *listKeyMap {
+func NewListKeyMap() *listKeyMap {
 	return &listKeyMap{
 		NewItem: key.NewBinding(
 			key.WithKeys("n"),

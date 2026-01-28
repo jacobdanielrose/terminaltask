@@ -9,7 +9,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jacobdanielrose/terminaltask/internal/app"
-	"github.com/jacobdanielrose/terminaltask/internal/storage"
+	storage "github.com/jacobdanielrose/terminaltask/internal/store"
 )
 
 var (

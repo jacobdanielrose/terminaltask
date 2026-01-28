@@ -13,13 +13,9 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-var statusMessageStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-	Render
-
-type EnterEditMsg struct{}
-type ToggleDoneMsg struct{}
-type DeleteMsg struct{}
+//
+// Delegate
+//
 
 type TaskDelegate struct {
 	Styles  Styles
@@ -31,6 +27,7 @@ type TaskDelegate struct {
 func NewTaskDelegate() TaskDelegate {
 	const defaultHeight = 3
 	const defaultSpacing = 1
+
 	return TaskDelegate{
 		Styles:  newTaskStyles(),
 		keymap:  newTaskKeyMap(),
@@ -41,6 +38,7 @@ func NewTaskDelegate() TaskDelegate {
 
 func (t TaskDelegate) Height() int  { return t.height }
 func (t TaskDelegate) Spacing() int { return t.spacing }
+
 func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	var title string
 
@@ -62,7 +60,8 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 				m.NewStatusMessage(statusMessageStyle(fmt.Sprintf("Completed: \"%s\"", title))),
 				func() tea.Msg {
 					return ToggleDoneMsg{}
-				})
+				},
+			)
 
 		case key.Matches(msg, t.keymap.EditItem):
 			return func() tea.Msg {
@@ -79,7 +78,8 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 				m.NewStatusMessage(statusMessageStyle(fmt.Sprintf("Deleted: \"%s\"", title))),
 				func() tea.Msg {
 					return DeleteMsg{}
-				})
+				},
+			)
 		}
 	}
 
@@ -195,7 +195,8 @@ func (t TaskDelegate) ShortHelp() []key.Binding {
 
 func (t TaskDelegate) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{t.keymap.ToggleDone,
+		{
+			t.keymap.ToggleDone,
 			t.keymap.EditItem,
 			t.keymap.RemoveItem,
 		},

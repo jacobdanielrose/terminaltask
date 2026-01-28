@@ -1,10 +1,12 @@
 package app
 
 import (
+	"time"
+
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	"github.com/jacobdanielrose/terminaltask/internal/storage"
+	storage "github.com/jacobdanielrose/terminaltask/internal/store"
 	task "github.com/jacobdanielrose/terminaltask/internal/task"
 	"github.com/jacobdanielrose/terminaltask/internal/task/editmenu"
 )
@@ -57,13 +59,15 @@ func NewModel(store storage.TaskStore) model {
 	listModel.Styles.Title = styles.titleStyle
 	listModel.SetShowStatusBar(true)
 	listModel.SetStatusBarItemName("task", "tasks")
-
 	listModel.SetItems(tasksToItems(tasks))
+
+	editmenu := editmenu.New(0, 0, "Title", "Description", time.Now())
+
 	return model{
 		list:     listModel,
-		editmenu: editmenu.New(0, 0),
+		editmenu: editmenu,
 		state:    stateList,
-		keymap:   newListKeyMap(),
+		keymap:   NewListKeyMap(),
 		styles:   styles,
 		store:    store,
 	}
