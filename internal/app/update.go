@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/google/uuid"
-	"github.com/jacobdanielrose/terminaltask/internal/ui/task"
-	"github.com/jacobdanielrose/terminaltask/internal/ui/task/editmenu"
+	"github.com/jacobdanielrose/terminaltask/internal/task"
+	"github.com/jacobdanielrose/terminaltask/internal/task/editmenu"
 )
 
 var statusMessageStyle = lipgloss.NewStyle().

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/jacobdanielrose/terminaltask/internal/app"
 	"github.com/jacobdanielrose/terminaltask/internal/storage"
 )
 
@@ -36,7 +37,7 @@ func main() {
 	path := filepath.Join(cfgDir, "terminaltask", "tasks.json")
 	store := storage.NewFileTaskStore(path)
 
-	m := initialModel(store)
+	m := app.NewModel(store)
 
 	p := tea.NewProgram(
 		m,

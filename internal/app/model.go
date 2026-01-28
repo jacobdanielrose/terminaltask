@@ -1,12 +1,12 @@
-package main
+package app
 
 import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/jacobdanielrose/terminaltask/internal/storage"
-	task "github.com/jacobdanielrose/terminaltask/internal/ui/task"
-	"github.com/jacobdanielrose/terminaltask/internal/ui/task/editmenu"
+	task "github.com/jacobdanielrose/terminaltask/internal/task"
+	"github.com/jacobdanielrose/terminaltask/internal/task/editmenu"
 )
 
 type state int
@@ -40,7 +40,7 @@ type model struct {
 	store    storage.TaskStore
 }
 
-func initialModel(store storage.TaskStore) model {
+func NewModel(store storage.TaskStore) model {
 
 	tasks, err := store.Load()
 	if err != nil {

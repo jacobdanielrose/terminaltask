@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jacobdanielrose/terminaltask/internal/ui/task"
+	"github.com/jacobdanielrose/terminaltask/internal/task"
 )
 
 type FileTaskStore struct {
