@@ -3,13 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
 	"github.com/jacobdanielrose/terminaltask/internal/app"
-	storage "github.com/jacobdanielrose/terminaltask/internal/store"
+	"github.com/jacobdanielrose/terminaltask/internal/config"
+	"github.com/jacobdanielrose/terminaltask/internal/store"
 )
 
 var (
@@ -19,7 +18,6 @@ var (
 )
 
 func main() {
-
 	ver := flag.Bool("version", false, "print version")
 	flag.Parse()
 
@@ -29,22 +27,19 @@ func main() {
 		return
 	}
 
-	cfgDir, err := os.UserConfigDir()
+	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to load config", "err", err)
 	}
 
-	path := filepath.Join(cfgDir, "terminaltask", "tasks.json")
-	store := storage.NewFileTaskStore(path)
-
-	m := app.NewModel(store)
+	store := store.NewFileTaskStore(cfg.TasksFile)
+	model := app.NewModel(cfg, store)
 
 	p := tea.NewProgram(
-		m,
+		model,
 		tea.WithAltScreen(),
 	)
 	if _, err := p.Run(); err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
+		log.Fatal("Error: ", err)
 	}
 }

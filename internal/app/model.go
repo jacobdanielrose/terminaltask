@@ -6,7 +6,8 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	storage "github.com/jacobdanielrose/terminaltask/internal/store"
+	"github.com/jacobdanielrose/terminaltask/internal/config"
+	"github.com/jacobdanielrose/terminaltask/internal/store"
 	task "github.com/jacobdanielrose/terminaltask/internal/task"
 	"github.com/jacobdanielrose/terminaltask/internal/task/editmenu"
 )
@@ -39,10 +40,10 @@ type model struct {
 	state    state
 	keymap   *listKeyMap
 	styles   Styles
-	store    storage.TaskStore
+	store    store.TaskStore
 }
 
-func NewModel(store storage.TaskStore) model {
+func NewModel(cfg config.Config, store store.TaskStore) model {
 
 	tasks, err := store.Load()
 	if err != nil {
