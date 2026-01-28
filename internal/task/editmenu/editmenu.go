@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	datepicker "github.com/ethanefung/bubble-datepicker"
 	"github.com/google/uuid"
+	"github.com/jacobdanielrose/terminaltask/internal/task"
 )
 
 //
@@ -184,32 +185,45 @@ type Model struct {
 }
 
 // New constructs a new edit menu model.
-func New(
+func New(task task.Task) Model {
+	return NewWithSize(0, 0, task)
+}
+
+func NewWithSize(
 	width, height int,
-	initialTitle, initialDesc string,
-	initialTime time.Time,
+	task task.Task,
 ) Model {
-	titleInput := newTitleInput(initialTitle)
-	descInput := newDescInput(initialDesc)
+	var (
+		title       = task.Title()
+		description = task.Description()
+		duedate     = task.DueDate
+	)
+	titleInput := newTitleInput(title)
+	descInput := newDescInput(description)
 
 	windowTitle := defaultWindowTitle
-	if initialTitle != "" {
-		windowTitle = initialTitle
+	if title != "" {
+		windowTitle = title
 	}
 
-	if initialTime.IsZero() {
-		initialTime = time.Now()
+	if duedate.IsZero() {
+		duedate = time.Now()
+	}
+
+	isNew := false
+	if task.IsEmpty() {
+		isNew = true
 	}
 
 	return Model{
 		// Identity / basic metadata
 		Title: windowTitle,
-		IsNew: false,
+		IsNew: isNew,
 
 		// User-editable fields
 		TaskTitle:  titleInput,
 		Desc:       descInput,
-		DatePicker: datepicker.New(initialTime),
+		DatePicker: datepicker.New(duedate),
 
 		// Layout / dimensions
 		width:  width,
@@ -236,6 +250,7 @@ func newTitleInput(initial string) textinput.Model {
 	ti.PromptStyle.Underline(true)
 	ti.Placeholder = defaultTitlePlaceholder
 	ti.SetValue(initial)
+	ti.SetCursor(len(initial))
 	ti.Focus()
 	return ti
 }
@@ -246,6 +261,7 @@ func newDescInput(initial string) textinput.Model {
 	ti.PromptStyle.Underline(true)
 	ti.Placeholder = defaultDescPlaceholder
 	ti.SetValue(initial)
+	ti.SetCursor(len(initial))
 	return ti
 }
 

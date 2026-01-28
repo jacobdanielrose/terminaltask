@@ -1,6 +1,6 @@
 package app
 
-func (m model) View() string {
+func (m Model) View() string {
 	switch m.state {
 	case stateList:
 		return m.styles.appStyle.Render(m.list.View())

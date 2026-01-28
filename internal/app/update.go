@@ -2,13 +2,11 @@ package app
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/google/uuid"
 	"github.com/jacobdanielrose/terminaltask/internal/task"
 	"github.com/jacobdanielrose/terminaltask/internal/task/editmenu"
 )
@@ -17,11 +15,11 @@ var statusMessageStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
 	Render
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := m.styles.appStyle.GetFrameSize()
@@ -31,7 +29,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = stateList
 		return m, nil
 	case task.EnterEditMsg:
-		return m.editTask(), nil
+		task := m.list.SelectedItem().(task.Task)
+		m.editmenu = editmenu.New(task)
+		m.state = stateEdit
+		return m, nil
 	case editmenu.SaveTaskMsg:
 		return m.saveTask(msg), nil
 	case task.ToggleDoneMsg:
@@ -58,7 +59,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) saveTask(msg editmenu.SaveTaskMsg) model {
+func (m Model) saveTask(msg editmenu.SaveTaskMsg) Model {
 	task := task.Task{
 		TitleStr: msg.Title,
 		DescStr:  msg.Desc,
@@ -87,7 +88,7 @@ func (m model) saveTask(msg editmenu.SaveTaskMsg) model {
 	return m
 }
 
-func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
+func (m Model) stateListUpdate(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		// Disables other keys if actively filtering
@@ -95,7 +96,9 @@ func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
 			break
 		}
 		if key.Matches(msg, m.keymap.NewItem) {
-			m = m.newTask()
+			newTask := task.New()
+			m.editmenu = editmenu.New(newTask)
+			m.state = stateEdit
 		}
 	}
 
@@ -104,36 +107,8 @@ func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) stateEditUpdate(msg tea.Msg) (model, tea.Cmd) {
+func (m Model) stateEditUpdate(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.editmenu, cmd = m.editmenu.Update(msg)
 	return m, cmd
-}
-
-func (m model) editTask() model {
-	m.state = stateEdit
-	task := m.list.SelectedItem().(task.Task)
-	m.editmenu.IsNew = false
-	m.editmenu.TaskID = task.GetID()
-	m.editmenu.TaskTitle.SetValue(task.Title())
-	m.editmenu.TaskTitle.SetCursor(len(task.TitleStr))
-	m.editmenu.Desc.SetValue(task.Description())
-	m.editmenu.Desc.SetCursor(len(task.DescStr))
-	m.editmenu.DatePicker.SetTime(task.DueDate)
-	return m
-}
-
-func (m model) newTask() model {
-	m.state = stateEdit
-	taskID := uuid.New()
-	m.editmenu.IsNew = true
-	m.editmenu.TaskID = taskID
-	m.editmenu.TaskTitle.SetValue("")
-	m.editmenu.Desc.SetValue("")
-	m.editmenu.TaskTitle.Placeholder = "New Task"
-	m.editmenu.Desc.Placeholder = "Description"
-	m.editmenu.TaskTitle.SetCursor(0)
-	m.editmenu.Desc.SetCursor(0)
-	m.editmenu.DatePicker.SetTime(time.Now())
-	return m
 }

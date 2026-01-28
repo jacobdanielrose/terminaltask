@@ -167,3 +167,19 @@ func (t *Task) GetID() uuid.UUID {
 func (t *Task) SetID(id uuid.UUID) {
 	t.taskID = id
 }
+
+func (t Task) IsEmpty() bool {
+	return t.TitleStr == "" &&
+		t.DescStr == "" &&
+		t.DueDate.IsZero() &&
+		!t.Done
+}
+
+func New() Task {
+	return Task{
+		taskID:   uuid.New(),
+		TitleStr: "",
+		DescStr:  "",
+		Done:     false,
+	}
+}

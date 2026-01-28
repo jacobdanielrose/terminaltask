@@ -1,8 +1,6 @@
 package app
 
 import (
-	"time"
-
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -34,7 +32,7 @@ func newStyles() Styles {
 	}
 }
 
-type model struct {
+type Model struct {
 	list     list.Model
 	editmenu editmenu.Model
 	state    state
@@ -43,7 +41,7 @@ type model struct {
 	store    store.TaskStore
 }
 
-func NewModel(cfg config.Config, store store.TaskStore) model {
+func NewModel(cfg config.Config, store store.TaskStore) Model {
 
 	tasks, err := store.Load()
 	if err != nil {
@@ -62,9 +60,9 @@ func NewModel(cfg config.Config, store store.TaskStore) model {
 	listModel.SetStatusBarItemName("task", "tasks")
 	listModel.SetItems(tasksToItems(tasks))
 
-	editmenu := editmenu.New(0, 0, "Title", "Description", time.Now())
+	editmenu := editmenu.New(task.Task{})
 
-	return model{
+	return Model{
 		list:     listModel,
 		editmenu: editmenu,
 		state:    stateList,
