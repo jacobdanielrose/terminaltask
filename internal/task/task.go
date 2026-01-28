@@ -180,6 +180,7 @@ func New() Task {
 		taskID:   uuid.New(),
 		TitleStr: "",
 		DescStr:  "",
-		Done:     false,
+		// leave Duedate null here
+		Done: false,
 	}
 }
