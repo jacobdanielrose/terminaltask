@@ -13,9 +13,14 @@ import (
 
 // Extract magic strings to constants
 const (
-	errSavingTasks = "Error saving!"
-	msgEditedTask  = "Edited: \"%s\""
-	msgDeletedTask = "Deleted: \"%s\""
+	// Generic error text for failed saves
+	statusMsgSaveError = "Error saving!"
+
+	// Success status templace
+	statusMsgEditedTask    = "Edited: \"%s\""
+	statusMsgDeletedTask   = "Deleted: \"%s\""
+	statusMsgCompletedTask = "Completed: \"%s\""
+	statusMsgCreatedTask   = "Created new task: \"%s\""
 )
 
 func (m model) Init() tea.Cmd {
@@ -34,14 +39,17 @@ func (m model) renderErrorStatus(msg string) string {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
 	case tea.WindowSizeMsg:
 		h, v := m.styles.Frame.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 		m.editmenu = m.editmenu.SetSize(msg.Width-h, msg.Height-v)
 		return m, nil
+
 	case editmenu.EscapeEditMsg:
 		m.state = stateList
 		return m, nil
+
 	case task.EnterEditMsg:
 		item := m.list.SelectedItem()
 		if item == nil {
@@ -51,8 +59,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.editmenu = editmenu.New(t)
 		m.state = stateEdit
 		return m, nil
+
 	case editmenu.SaveTaskMsg:
 		return m.saveTask(msg)
+
 	case task.ToggleDoneMsg:
 		item := m.list.SelectedItem()
 		if item == nil {
@@ -63,18 +73,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		task.Done = !task.Done
 		m.list.SetItem(index, task)
 		tasks := itemsToTasks(m.list.Items())
-		return m, m.saveTasksCmd(tasks, fmt.Sprintf(msgEditedTask, task.Title()))
+
+		var statusText string
+		if task.Done {
+			statusText = fmt.Sprintf(statusMsgCompletedTask, task.Title())
+		} else {
+			statusText = fmt.Sprintf(statusMsgEditedTask, task.Title())
+		}
+		return m, m.saveTasksCmd(tasks, statusText)
+
 	case TasksSavedMsg:
 		cmd := m.list.NewStatusMessage(
 			m.renderSuccessStatus(msg.msg),
 		)
 		return m, cmd
+
 	case TasksSaveErrorMsg:
-		cmd := m.list.NewStatusMessage(
-			m.renderErrorStatus(errSavingTasks),
-		)
+		cmd := m.list.NewStatusMessage(statusMsgSaveError)
 		log.Error("Error saving tasks", "err", msg.Err, "store", m.service.Name())
 		return m, cmd
+
 	case TasksLoadedMsg:
 		m.list.SetItems(tasksToItems(msg.Tasks))
 		return m, nil
@@ -84,7 +102,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		tasks := itemsToTasks(m.list.Items())
 		deletedTask := tasks[index]
 		m.list.RemoveItem(index)
-		return m, m.saveTasksCmd(tasks, fmt.Sprintf(msgDeletedTask, deletedTask.Title()))
+		statusText := fmt.Sprintf(statusMsgDeletedTask, deletedTask.Title())
+		return m, m.saveTasksCmd(tasks, statusText)
 	}
 
 	switch m.state {
@@ -106,17 +125,21 @@ func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
 	t.SetID(msg.TaskID)
 
 	index := -1
+	var statusText string
+
 	if len(m.list.Items()) != 0 && !msg.IsNew {
 		index = m.list.Index()
 		m.list.SetItem(index, t)
+		statusText = fmt.Sprintf(statusMsgEditedTask, t.Title())
 	} else {
 		m.list.InsertItem(index, t)
+		statusText = fmt.Sprintf(statusMsgCreatedTask, t.Title())
 	}
 
 	m.state = stateList
 	tasks := itemsToTasks(m.list.Items())
 
-	return m, m.saveTasksCmd(tasks, fmt.Sprintf(msgEditedTask, t.Title()))
+	return m, m.saveTasksCmd(tasks, statusText)
 }
 
 func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {

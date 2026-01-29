@@ -25,8 +25,6 @@ const (
 
 	defaultWindowTitle = "Editing..."
 
-	calendarPadding = 10
-
 	datePickerErrorMsg  = "Error: Unable to parse date"
 	datePickerPastError = "Error: Date cannot be in the past"
 	titleErrorMsg       = "Error: Title cannot be empty"
