@@ -6,48 +6,76 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
 	"github.com/jacobdanielrose/terminaltask/internal/task"
 	"github.com/jacobdanielrose/terminaltask/internal/task/editmenu"
 )
 
-var statusMessageStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-	Render
+// Extract magic strings to constants
+const (
+	errSavingTasks = "Error saving!"
+	msgEditedTask  = "Edited: \"%s\""
+	msgDeletedTask = "Deleted: \"%s\""
+)
 
-func (m Model) Init() tea.Cmd {
-	return nil
+func (m model) Init() tea.Cmd {
+	return m.loadTasksCmd()
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		h, v := m.styles.appStyle.GetFrameSize()
+		h, v := m.styles.Frame.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
-		m.editmenu.SetSize(msg.Width-h, msg.Height-v)
+		m.editmenu = m.editmenu.SetSize(msg.Width-h, msg.Height-v)
+		return m, nil
 	case editmenu.EscapeEditMsg:
 		m.state = stateList
 		return m, nil
 	case task.EnterEditMsg:
-		task := m.list.SelectedItem().(task.Task)
-		m.editmenu = editmenu.New(task)
+		item := m.list.SelectedItem()
+		if item == nil {
+			return m, nil
+		}
+		t := item.(task.Task)
+		m.editmenu = editmenu.New(t)
 		m.state = stateEdit
 		return m, nil
 	case editmenu.SaveTaskMsg:
-		return m.saveTask(msg), nil
+		return m.saveTask(msg)
 	case task.ToggleDoneMsg:
-		task := m.list.SelectedItem().(task.Task)
+		item := m.list.SelectedItem()
+		if item == nil {
+			return m, nil
+		}
+		task := item.(task.Task)
 		index := m.list.Index()
+		task.Done = !task.Done
 		m.list.SetItem(index, task)
 		tasks := itemsToTasks(m.list.Items())
-		_ = m.store.Save(tasks)
+		return m, m.saveTasksCmd(tasks, fmt.Sprintf(msgEditedTask, task.Title()))
+	case TasksSavedMsg:
+		m.list.NewStatusMessage(
+			m.styles.
+				Status.
+				SuccessStyle.
+				Render(msg.msg),
+		)
 		return m, nil
+	case TasksSaveErrorMsg:
+		m.list.NewStatusMessage(errSavingTasks)
+		log.Error("Error saving tasks", "err", msg.Err, "store", m.service.Name())
+		return m, nil
+	case TasksLoadedMsg:
+		m.list.SetItems(tasksToItems(msg.Tasks))
+		return m, nil
+
 	case task.DeleteMsg:
-		// deletion in list already happens in the delegate
-		// just need to save to backend here.
+		index := m.list.Index()
 		tasks := itemsToTasks(m.list.Items())
-		_ = m.store.Save(tasks)
-		return m, nil
+		deletedTask := tasks[index]
+		m.list.RemoveItem(index)
+		return m, m.saveTasksCmd(tasks, fmt.Sprintf(msgDeletedTask, deletedTask.Title()))
 	}
 
 	switch m.state {
@@ -59,36 +87,30 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) saveTask(msg editmenu.SaveTaskMsg) Model {
-	task := task.Task{
+func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
+	t := task.Task{
 		TitleStr: msg.Title,
 		DescStr:  msg.Desc,
 		DueDate:  msg.Date,
 		Done:     msg.Done,
 	}
-	task.SetID(msg.TaskID)
+	t.SetID(msg.TaskID)
 
 	index := -1
 	if len(m.list.Items()) != 0 && !msg.IsNew {
 		index = m.list.Index()
-		m.list.SetItem(index, task)
+		m.list.SetItem(index, t)
 	} else {
-		m.list.InsertItem(index, task)
+		m.list.InsertItem(index, t)
 	}
 
 	m.state = stateList
 	tasks := itemsToTasks(m.list.Items())
-	_ = m.store.Save(tasks)
 
-	m.list.NewStatusMessage(
-		statusMessageStyle(
-			fmt.Sprintf("Edited: \"%s\"", task.Title()),
-		),
-	)
-	return m
+	return m, m.saveTasksCmd(tasks, fmt.Sprintf(msgEditedTask, t.Title()))
 }
 
-func (m Model) stateListUpdate(msg tea.Msg) (Model, tea.Cmd) {
+func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		// Disables other keys if actively filtering
@@ -107,7 +129,7 @@ func (m Model) stateListUpdate(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m Model) stateEditUpdate(msg tea.Msg) (Model, tea.Cmd) {
+func (m model) stateEditUpdate(msg tea.Msg) (model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.editmenu, cmd = m.editmenu.Update(msg)
 	return m, cmd

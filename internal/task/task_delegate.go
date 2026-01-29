@@ -13,6 +13,12 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
+const (
+	defaultDelegateHeight  = 3
+	defaultDelegateSpacing = 1
+	dateFormat             = "2006-01-02"
+)
+
 //
 // Delegate
 //
@@ -25,14 +31,11 @@ type TaskDelegate struct {
 }
 
 func NewTaskDelegate() TaskDelegate {
-	const defaultHeight = 3
-	const defaultSpacing = 1
-
 	return TaskDelegate{
 		Styles:  newTaskStyles(),
 		keymap:  newTaskKeyMap(),
-		height:  defaultHeight,
-		spacing: defaultSpacing,
+		height:  defaultDelegateHeight,
+		spacing: defaultDelegateSpacing,
 	}
 }
 
@@ -52,10 +55,6 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, t.keymap.ToggleDone):
-			index := m.Index()
-			task := m.Items()[index].(Task)
-			task.Done = !task.Done
-			m.SetItem(index, task)
 			return tea.Batch(
 				m.NewStatusMessage(statusMessageStyle(fmt.Sprintf("Completed: \"%s\"", title))),
 				func() tea.Msg {
@@ -69,17 +68,12 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 			}
 
 		case key.Matches(msg, t.keymap.RemoveItem):
-			index := m.Index()
-			m.RemoveItem(index)
 			if len(m.Items()) == 0 {
 				t.keymap.RemoveItem.SetEnabled(false)
 			}
-			return tea.Batch(
-				m.NewStatusMessage(statusMessageStyle(fmt.Sprintf("Deleted: \"%s\"", title))),
-				func() tea.Msg {
-					return DeleteMsg{}
-				},
-			)
+			return func() tea.Msg {
+				return DeleteMsg{}
+			}
 		}
 	}
 
@@ -97,17 +91,23 @@ func (t TaskDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 		s                 = &t.Styles
 	)
 
-	if i, ok := item.(Task); ok {
+	if i, ok := item.(Task); !ok {
+		log.Error("Could not render task",
+			"task.title", i.Title(),
+			"task.desc", i.Description(),
+			"task.done", i.Done,
+		)
+		return
+	} else {
 		title = i.Title()
 		desc = i.Description()
 		done = i.Done
-		date = i.DueDate.Format("2006-01-02")
-	} else {
-		return
+		date = i.DueDate.Format(dateFormat)
 	}
 
 	if m.Width() <= 0 {
 		// short-circuit
+		log.Error("Model width is less than zero!")
 		return
 	}
 

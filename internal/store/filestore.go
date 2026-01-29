@@ -9,12 +9,21 @@ import (
 	"github.com/jacobdanielrose/terminaltask/internal/task"
 )
 
+const (
+	DefaultName = "File Store"
+)
+
 type FileTaskStore struct {
 	path string
+	name string
 }
 
-func NewFileTaskStore(path string) *FileTaskStore {
-	return &FileTaskStore{path: path}
+func NewFileTaskStore(path string) TaskStore {
+	return &FileTaskStore{path: path, name: DefaultName}
+}
+
+func (fts *FileTaskStore) Name() string {
+	return fts.name
 }
 
 func (fts *FileTaskStore) Load() ([]task.Task, error) {

@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	datepicker "github.com/ethanefung/bubble-datepicker"
 	"github.com/google/uuid"
 	"github.com/jacobdanielrose/terminaltask/internal/task"
 )
@@ -27,6 +26,11 @@ const (
 	defaultWindowTitle = "Editing..."
 
 	calendarPadding = 10
+
+	datePickerErrorMsg  = "Error: Unable to parse date"
+	datePickerPastError = "Error: Date cannot be in the past"
+	titleErrorMsg       = "Error: Title cannot be empty"
+	descriptionErrorMsg = "Error: Description cannot be empty"
 )
 
 //
@@ -161,17 +165,13 @@ type Model struct {
 	TaskID uuid.UUID
 	IsNew  bool
 
-	// User-editable fields
-	TaskTitle  textinput.Model
-	Desc       textinput.Model
-	DatePicker datepicker.Model
+	form Form
 
 	// Layout / dimensions
 	width  int
 	height int
 
 	// UI state
-	focusIdx  int
 	showTitle bool
 	showHelp  bool
 	statusMsg string
@@ -184,22 +184,42 @@ type Model struct {
 	keymap *EditTaskKeyMap
 }
 
-// New constructs a new edit menu model.
+// New constructs a new edit menu model with default styles.
 func New(task task.Task) Model {
 	return NewWithSize(0, 0, task)
+}
+
+// NewWithStyles constructs a new edit menu model with explicit styles
+// for the outer edit menu and the inner form.
+func NewWithStyles(task task.Task, menuStyles Styles, formStyles Styles) Model {
+	return NewWithSizeAndStyles(0, 0, task, menuStyles, formStyles)
 }
 
 func NewWithSize(
 	width, height int,
 	task task.Task,
 ) Model {
+	styles := DefaultStyles()
+	return NewWithSizeAndStyles(width, height, task, styles, styles)
+}
+
+// NewWithSizeAndStyles is the core constructor used by all others.
+// It allows callers (like the top-level app model) to inject styling
+// for both the edit menu container and the inner form.
+func NewWithSizeAndStyles(
+	width, height int,
+	task task.Task,
+	menuStyles Styles,
+	formStyles Styles,
+) Model {
 	var (
 		title       = task.Title()
 		description = task.Description()
 		duedate     = task.DueDate
+		done        = task.Done
+		keymap      = newEditTaskKeyMap()
+		isNew       = false
 	)
-	titleInput := newTitleInput(title)
-	descInput := newDescInput(description)
 
 	windowTitle := defaultWindowTitle
 	if title != "" {
@@ -210,7 +230,6 @@ func NewWithSize(
 		duedate = time.Now()
 	}
 
-	isNew := false
 	if task.IsEmpty() {
 		isNew = true
 	}
@@ -221,48 +240,24 @@ func NewWithSize(
 		IsNew: isNew,
 
 		// User-editable fields
-		TaskTitle:  titleInput,
-		Desc:       descInput,
-		DatePicker: datepicker.New(duedate),
+		form: NewForm(title, description, duedate, done, keymap, formStyles),
 
 		// Layout / dimensions
 		width:  width,
 		height: height,
 
 		// UI state
-		focusIdx:  0,
 		showTitle: true,
 		showHelp:  true,
 		statusMsg: "",
 
 		// UI components and styles
-		styles: DefaultStyles(),
+		styles: menuStyles,
 		help:   help.New(),
 
 		// Input bindings
-		keymap: newEditTaskKeyMap(),
+		keymap: keymap,
 	}
-}
-
-func newTitleInput(initial string) textinput.Model {
-	ti := textinput.New()
-	ti.Prompt = defaultTitlePrompt
-	ti.PromptStyle.Underline(true)
-	ti.Placeholder = defaultTitlePlaceholder
-	ti.SetValue(initial)
-	ti.SetCursor(len(initial))
-	ti.Focus()
-	return ti
-}
-
-func newDescInput(initial string) textinput.Model {
-	ti := textinput.New()
-	ti.Prompt = defaultDescPrompt
-	ti.PromptStyle.Underline(true)
-	ti.Placeholder = defaultDescPlaceholder
-	ti.SetValue(initial)
-	ti.SetCursor(len(initial))
-	return ti
 }
 
 //
@@ -281,7 +276,8 @@ func (m *Model) showStatus(msg string) tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
-	var cmds []tea.Cmd
+	var cmd tea.Cmd
+	m.form, cmd = m.form.Update(msg)
 
 	switch msg := msg.(type) {
 	case clearStatusMsg:
@@ -290,23 +286,25 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, m.keymap.SaveField):
-			m.focusIdx = (m.focusIdx + 1) % 3
-			m.setFocus()
-
 		case key.Matches(msg, m.keymap.SaveTask):
-			if m.DatePicker.Time.Before(time.Now().Truncate(24 * time.Hour)) {
-				return m, m.showStatus("You cannot pick a date in the past!")
+			if m.form.Date.Time.Before(time.Now().Truncate(24 * time.Hour)) {
+				return m, m.showStatus(datePickerPastError)
 			}
-			m.focusIdx = 0
-			m.setFocus()
+			if m.form.Title.Value() == "" {
+				return m, m.showStatus(titleErrorMsg)
+			}
+			if m.form.Desc.Value() == "" {
+				return m, m.showStatus(descriptionErrorMsg)
+			}
+
+			m.form = m.form.setFocus()
 			return m, func() tea.Msg {
 				return SaveTaskMsg{
 					TaskID: m.TaskID,
-					Title:  m.TaskTitle.Value(),
-					Desc:   m.Desc.Value(),
-					Date:   m.DatePicker.Time,
-					Done:   false,
+					Title:  m.form.Title.Value(),
+					Desc:   m.form.Desc.Value(),
+					Date:   m.form.Date.Time,
+					Done:   m.form.Done,
 					IsNew:  m.IsNew,
 				}
 			}
@@ -324,48 +322,24 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 	}
 
-	var cmd tea.Cmd
-
-	m.TaskTitle, cmd = m.TaskTitle.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.Desc, cmd = m.Desc.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.DatePicker, cmd = m.DatePicker.Update(msg)
-	cmds = append(cmds, cmd)
-
-	return m, tea.Batch(cmds...)
+	return m, cmd
 }
 
-func (m *Model) setFocus() {
-	m.TaskTitle.Blur()
-	m.Desc.Blur()
-	m.DatePicker.Blur()
-
-	switch m.focusIdx {
-	case 0:
-		m.TaskTitle.Focus()
-	case 1:
-		m.Desc.Focus()
-	case 2:
-		m.DatePicker.SelectDate()
-		m.DatePicker.SetFocus(datepicker.FocusCalendar)
-	}
-}
-
-func (m *Model) SetSize(width int, height int) {
+func (m Model) SetSize(width int, height int) Model {
 	m.width = width
 	m.help.Width = width
 	m.height = height
+	return m
 }
 
-func (m *Model) SetShowTitle(v bool) {
+func (m Model) SetShowTitle(v bool) Model {
 	m.showTitle = v
+	return m
 }
 
-func (m *Model) SetShowHelp(v bool) {
+func (m Model) SetShowHelp(v bool) Model {
 	m.showHelp = v
+	return m
 }
 
 //
@@ -429,31 +403,8 @@ func (m Model) ShowTitle() bool {
 }
 
 func (m Model) editView() string {
-	m.TaskTitle.TextStyle = m.styles.Normal
-	m.TaskTitle.PromptStyle = m.styles.Normal
-	m.Desc.TextStyle = m.styles.Normal
-	m.Desc.PromptStyle = m.styles.Normal
-
-	switch m.focusIdx {
-	case 0:
-		m.TaskTitle.TextStyle = m.styles.Normal
-		m.TaskTitle.PromptStyle = m.styles.Focused
-	case 1:
-		m.Desc.TextStyle = m.styles.Normal
-		m.Desc.PromptStyle = m.styles.Focused
-	}
-
-	calendar := lipgloss.NewStyle().
-		AlignHorizontal(lipgloss.Center).
-		PaddingLeft(calendarPadding).
-		Render(m.DatePicker.View())
-
-	return lipgloss.JoinVertical(
-		lipgloss.Left,
-		m.TaskTitle.View(),
-		m.Desc.View(),
-		calendar,
-	)
+	// Delegate rendering of the editable fields to the Form submodel.
+	return m.form.View()
 }
 
 // ShowHelp returns whether or not the help is set to be rendered.

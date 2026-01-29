@@ -2,10 +2,10 @@ package app
 
 import (
 	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/log"
 	"github.com/jacobdanielrose/terminaltask/internal/config"
-	"github.com/jacobdanielrose/terminaltask/internal/store"
+	taskservice "github.com/jacobdanielrose/terminaltask/internal/service"
 	task "github.com/jacobdanielrose/terminaltask/internal/task"
 	"github.com/jacobdanielrose/terminaltask/internal/task/editmenu"
 )
@@ -17,64 +17,110 @@ const (
 	stateEdit
 )
 
-type Styles struct {
-	appStyle   lipgloss.Style
-	titleStyle lipgloss.Style
+const (
+	listModelTitle = "Terminal Task"
+)
+
+type statusMessageStyles struct {
+	SuccessStyle lipgloss.Style
+	ErrorStyle   lipgloss.Style
 }
 
-func newStyles() Styles {
-	return Styles{
-		appStyle: lipgloss.NewStyle().Padding(1, 2),
-		titleStyle: lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFDF5")).
-			Background(lipgloss.Color("#25A065")).
-			Padding(0, 1),
+// ListStyles contains styles for the task list view.
+type ListStyles struct {
+	Title lipgloss.Style
+}
+
+// AppStyles is the top-level style graph for the application.
+type AppStyles struct {
+	// Frame is the global application frame (padding/margins) applied
+	// around both the list view and the editmenu view.
+	Frame lipgloss.Style
+
+	// Status contains global success/error status styles shared by
+	// all views (list, edit menu, etc.).
+	Status statusMessageStyles
+
+	// List contains styles specific to the list component.
+	List ListStyles
+
+	// EditMenu contains styles for the edit menu container.
+	EditMenu editmenu.Styles
+
+	// Form contains styles for the inner edit form.
+	Form editmenu.Styles
+}
+
+// newAppStyles constructs the top-level styles for the app.
+func newAppStyles() AppStyles {
+	listTitle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#FFFDF5")).
+		Background(lipgloss.Color("#25A065")).
+		Padding(0, 1)
+
+	status := statusMessageStyles{
+		SuccessStyle: lipgloss.NewStyle().
+			Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}),
+		ErrorStyle: lipgloss.NewStyle().
+			Foreground(lipgloss.AdaptiveColor{Light: "#FF0000", Dark: "#FF0000"}),
+	}
+
+	editMenuStyles := editmenu.DefaultStyles()
+	formStyles := editmenu.DefaultStyles()
+
+	// Use global status styles for the edit menu status message.
+	editMenuStyles.StatusMessage = status.SuccessStyle
+
+	return AppStyles{
+		Frame:  lipgloss.NewStyle().Padding(1, 2),
+		Status: status,
+		List: ListStyles{
+			Title: listTitle,
+		},
+		EditMenu: editMenuStyles,
+		Form:     formStyles,
 	}
 }
 
-type Model struct {
+type model struct {
 	list     list.Model
 	editmenu editmenu.Model
 	state    state
 	keymap   *listKeyMap
-	styles   Styles
-	store    store.TaskStore
+	styles   AppStyles
+	service  taskservice.Service
 }
 
-func NewModel(cfg config.Config, store store.TaskStore) Model {
-
-	tasks, err := store.Load()
-	if err != nil {
-		tasks = []task.Task{}
-		log.Error("Unable to open saved tasks!", "err", err)
-	}
-
-	styles := newStyles()
+func NewModel(cfg config.Config, service taskservice.Service) tea.Model {
+	appStyles := newAppStyles()
 
 	delegate := task.NewTaskDelegate()
-
 	listModel := list.New(nil, delegate, 0, 0)
-	listModel.Title = "Terminal Task"
-	listModel.Styles.Title = styles.titleStyle
-	listModel.SetShowStatusBar(true)
-	listModel.SetStatusBarItemName("task", "tasks")
-	listModel.SetItems(tasksToItems(tasks))
+	editmenuModel := editmenu.NewWithStyles(task.Task{}, appStyles.EditMenu, appStyles.Form)
 
-	editmenu := editmenu.New(task.Task{})
+	listModel = configureListModel(listModel, appStyles.List)
 
-	return Model{
+	return model{
 		list:     listModel,
-		editmenu: editmenu,
+		editmenu: editmenuModel,
 		state:    stateList,
 		keymap:   NewListKeyMap(),
-		styles:   styles,
-		store:    store,
+		styles:   appStyles,
+		service:  service,
 	}
+}
+
+func configureListModel(listModel list.Model, styles ListStyles) list.Model {
+	listModel.Title = listModelTitle
+	listModel.Styles.Title = styles.Title
+	listModel.SetShowStatusBar(true)
+	listModel.SetStatusBarItemName("task", "tasks")
+	return listModel
 }
 
 // Convert Task to Item
 func taskToItem(t task.Task) list.Item {
-	return task.Task{TitleStr: t.TitleStr, DescStr: t.DescStr, DueDate: t.DueDate, Done: t.Done}
+	return t
 }
 
 // Convert []task.Task to []list.Item
@@ -91,8 +137,7 @@ func tasksToItems(tasks []task.Task) []list.Item {
 
 // Convert Item to Task
 func itemToTask(i list.Item) task.Task {
-	t := i.(task.Task)
-	return task.Task{TitleStr: t.TitleStr, DescStr: t.DescStr, DueDate: t.DueDate, Done: t.Done}
+	return i.(task.Task)
 }
 
 // Convert []list.Item to []task.Task
