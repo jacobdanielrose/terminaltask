@@ -25,10 +25,9 @@ const (
 
 	defaultWindowTitle = "Editing..."
 
-	datePickerErrorMsg  = "Error: Unable to parse date"
-	datePickerPastError = "Error: Date cannot be in the past"
-	titleErrorMsg       = "Error: Title cannot be empty"
-	descriptionErrorMsg = "Error: Description cannot be empty"
+	statusMsgDatePastError   = "Error: Date cannot be in the past"
+	statusMsgTitleEmptyError = "Error: Title cannot be empty"
+	statusMsgDescEmptyError  = "Error: Description cannot be empty"
 )
 
 //
@@ -89,7 +88,7 @@ func DefaultStyles() (s Styles) {
 		Padding(0, 0, 0, 2)
 
 	s.StatusMessage = lipgloss.NewStyle().
-		Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"})
+		Foreground(lipgloss.AdaptiveColor{Light: "#FF0000", Dark: "#FF5555"})
 
 	return s
 }
@@ -268,7 +267,7 @@ func (m Model) Init() tea.Cmd {
 
 func (m *Model) showStatus(msg string) tea.Cmd {
 	m.statusMsg = msg
-	return tea.Tick(1*time.Second, func(t time.Time) tea.Msg {
+	return tea.Tick(2*time.Second, func(t time.Time) tea.Msg {
 		return clearStatusMsg{}
 	})
 }
@@ -286,13 +285,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keymap.SaveTask):
 			if m.form.Date.Time.Before(time.Now().Truncate(24 * time.Hour)) {
-				return m, m.showStatus(datePickerPastError)
+				return m, m.showStatus(statusMsgDatePastError)
 			}
 			if m.form.Title.Value() == "" {
-				return m, m.showStatus(titleErrorMsg)
+				return m, m.showStatus(statusMsgTitleEmptyError)
 			}
 			if m.form.Desc.Value() == "" {
-				return m, m.showStatus(descriptionErrorMsg)
+				return m, m.showStatus(statusMsgDescEmptyError)
 			}
 
 			m.form = m.form.setFocus()
