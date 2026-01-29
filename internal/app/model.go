@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -115,6 +117,7 @@ func configureListModel(listModel list.Model, styles ListStyles) list.Model {
 	listModel.Styles.Title = styles.Title
 	listModel.SetShowStatusBar(true)
 	listModel.SetStatusBarItemName("task", "tasks")
+	listModel.StatusMessageLifetime = 1 * time.Second
 	return listModel
 }
 

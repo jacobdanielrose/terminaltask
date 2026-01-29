@@ -22,6 +22,16 @@ func (m model) Init() tea.Cmd {
 	return m.loadTasksCmd()
 }
 
+// renderSuccessStatus formats a success status message with global styles.
+func (m model) renderSuccessStatus(msg string) string {
+	return m.styles.Status.SuccessStyle.Render(msg)
+}
+
+// renderErrorStatus formats an error status message with global styles.
+func (m model) renderErrorStatus(msg string) string {
+	return m.styles.Status.ErrorStyle.Render(msg)
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -55,17 +65,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		tasks := itemsToTasks(m.list.Items())
 		return m, m.saveTasksCmd(tasks, fmt.Sprintf(msgEditedTask, task.Title()))
 	case TasksSavedMsg:
-		m.list.NewStatusMessage(
-			m.styles.
-				Status.
-				SuccessStyle.
-				Render(msg.msg),
+		cmd := m.list.NewStatusMessage(
+			m.renderSuccessStatus(msg.msg),
 		)
-		return m, nil
+		return m, cmd
 	case TasksSaveErrorMsg:
-		m.list.NewStatusMessage(errSavingTasks)
+		cmd := m.list.NewStatusMessage(
+			m.renderErrorStatus(errSavingTasks),
+		)
 		log.Error("Error saving tasks", "err", msg.Err, "store", m.service.Name())
-		return m, nil
+		return m, cmd
 	case TasksLoadedMsg:
 		m.list.SetItems(tasksToItems(msg.Tasks))
 		return m, nil

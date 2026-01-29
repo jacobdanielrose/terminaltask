@@ -43,24 +43,13 @@ func (t TaskDelegate) Height() int  { return t.height }
 func (t TaskDelegate) Spacing() int { return t.spacing }
 
 func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
-	var title string
-
-	if i, ok := m.SelectedItem().(Task); ok {
-		title = i.Title()
-	} else {
-		return nil
-	}
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, t.keymap.ToggleDone):
-			return tea.Batch(
-				m.NewStatusMessage(statusMessageStyle(fmt.Sprintf("Completed: \"%s\"", title))),
-				func() tea.Msg {
-					return ToggleDoneMsg{}
-				},
-			)
+			return func() tea.Msg {
+				return ToggleDoneMsg{}
+			}
 
 		case key.Matches(msg, t.keymap.EditItem):
 			return func() tea.Msg {
