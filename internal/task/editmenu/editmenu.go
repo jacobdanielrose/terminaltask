@@ -123,10 +123,6 @@ func newEditTaskKeyMap() *EditTaskKeyMap {
 			key.WithKeys("ctrl+o"),
 			key.WithHelp("ctrl+o", "help"),
 		),
-		Quit: key.NewBinding(
-			key.WithKeys("ctrl+c"),
-			key.WithHelp("ctrl+c", "quit"),
-		),
 	}
 }
 
@@ -135,7 +131,7 @@ func (e EditTaskKeyMap) ShortHelp() []key.Binding {
 		e.SaveField,
 		e.EscapeEditMode,
 		e.SaveTask,
-		e.Help,
+		// e.Help,
 	}
 }
 
@@ -145,7 +141,7 @@ func (e EditTaskKeyMap) FullHelp() [][]key.Binding {
 			e.SaveField,
 			e.EscapeEditMode,
 			e.SaveTask,
-			e.Help,
+			// e.Help,
 			e.Quit,
 		},
 	}

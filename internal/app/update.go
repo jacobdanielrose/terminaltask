@@ -38,8 +38,15 @@ func (m model) renderErrorStatus(msg string) string {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
+	// Global key handling (applies in all states)
+	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		if key.Matches(keyMsg, m.keymap.Quit) {
+			// ctrl+c: always quit the app, no matter where we are
+			return m, tea.Quit
+		}
+	}
 
+	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := m.styles.Frame.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
@@ -89,7 +96,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	case TasksSaveErrorMsg:
-		cmd := m.list.NewStatusMessage(statusMsgSaveError)
+		cmd := m.list.NewStatusMessage(
+			m.renderErrorStatus(statusMsgSaveError),
+		)
 		log.Error("Error saving tasks", "err", msg.Err, "store", m.service.Name())
 		return m, cmd
 
