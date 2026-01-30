@@ -361,8 +361,8 @@ func (m Model) View() string {
 		availHeight -= lipgloss.Height(m.statusMsg)
 	}
 
-	editContent := lipgloss.NewStyle().Height(availHeight).Render(m.editView())
-	sections = append(sections, editContent)
+	formView := lipgloss.NewStyle().Height(availHeight).MaxHeight(m.height).Render(m.form.View())
+	sections = append(sections, formView)
 
 	if m.statusMsg != "" {
 		statusView := m.styles.StatusMessage.Align(lipgloss.Center).Render(m.statusMsg)
@@ -395,11 +395,6 @@ func (m Model) ShowTitle() bool {
 	return m.showTitle
 }
 
-func (m Model) editView() string {
-	// Delegate rendering of the editable fields to the Form submodel.
-	return m.form.View()
-}
-
 // ShowHelp returns whether or not the help is set to be rendered.
 func (m Model) ShowHelp() bool {
 	return m.showHelp
@@ -407,4 +402,12 @@ func (m Model) ShowHelp() bool {
 
 func (m Model) helpView() string {
 	return m.styles.HelpStyle.Render(m.help.View(m.keymap))
+}
+
+func (m Model) Width() int {
+	return m.width
+}
+
+func (m Model) Height() int {
+	return m.height
 }

@@ -49,8 +49,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := m.styles.Frame.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
-		m.editmenu = m.editmenu.SetSize(msg.Width-h, msg.Height-v)
+		contentW, contentH := msg.Width-h, msg.Height-v
+		m.list.SetSize(contentW, contentH)
+		m.editmenu = m.editmenu.SetSize(contentW, contentH)
 		return m, nil
 
 	case editmenu.EscapeEditMsg:
@@ -63,7 +64,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		t := item.(task.Task)
-		m.editmenu = editmenu.New(t)
+		w, h := m.editmenu.Width(), m.editmenu.Height()
+		m.editmenu = editmenu.NewWithSize(w, h, t)
 		m.state = stateEdit
 		return m, nil
 
@@ -160,7 +162,8 @@ func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
 		}
 		if key.Matches(msg, m.keymap.NewItem) {
 			newTask := task.New()
-			m.editmenu = editmenu.New(newTask)
+			w, h := m.editmenu.Width(), m.editmenu.Height()
+			m.editmenu = editmenu.NewWithSize(w, h, newTask)
 			m.state = stateEdit
 		}
 	}

@@ -30,6 +30,8 @@ type Form struct {
 	keymap   *EditTaskKeyMap
 
 	styles Styles
+
+	height int
 }
 
 func NewForm(
