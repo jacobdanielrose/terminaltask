@@ -95,10 +95,6 @@ func newTaskStyles() Styles {
 	}
 }
 
-var statusMessageStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.AdaptiveColor{Light: "#04B575", Dark: "#04B575"}).
-	Render
-
 //
 // Keymap
 //
