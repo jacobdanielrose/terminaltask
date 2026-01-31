@@ -1,5 +1,6 @@
 # TerminalTask
 [![CI](https://github.com/jacobdanielrose/terminaltask/actions/workflows/ci.yml/badge.svg)](https://github.com/jacobdanielrose/terminaltask/actions/workflows/ci.yml)
+[![Release](https://github.com/jacobdanielrose/terminaltask/actions/workflows/release.yml/badge.svg)](https://github.com/jacobdanielrose/terminaltask/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/jacobdanielrose/terminaltask/branch/main/graph/badge.svg)](https://codecov.io/gh/jacobdanielrose/terminaltask)
 
 TerminalTask is a task management application designed to run directly in your terminal. It provides a simple and intuitive interface for managing reminders and to-do lists using the minimalist, text-based charm of terminal applications.
