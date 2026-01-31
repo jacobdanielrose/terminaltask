@@ -180,3 +180,13 @@ func New() Task {
 		Done: false,
 	}
 }
+
+func NewWithOptions(title, desc string, duedate time.Time, done bool) Task {
+	return Task{
+		taskID:   uuid.New(),
+		TitleStr: title,
+		DescStr:  desc,
+		DueDate:  duedate,
+		Done:     done,
+	}
+}
