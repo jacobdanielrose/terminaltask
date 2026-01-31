@@ -10,7 +10,7 @@ jobs:
       - name: Install golangci-lint
         run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - name: run tests
-        run: make lint coverage
+        run: make lint test coverage
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:

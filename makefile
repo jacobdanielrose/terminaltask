@@ -27,9 +27,12 @@ release:
 	git push origin $(VERSION)
 
 test:
+	go test ./...
+
+test cover:
 	go test ./... -cover
 
-coverage:
+test coverage:
 	go test ./... -coverprofile=coverage.out
 
 lint:

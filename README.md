@@ -1,85 +1,111 @@
-# TerminalTask
+# terminaltask
+
 [![CI](https://github.com/jacobdanielrose/terminaltask/actions/workflows/ci.yml/badge.svg)](https://github.com/jacobdanielrose/terminaltask/actions/workflows/ci.yml)
 [![Release](https://github.com/jacobdanielrose/terminaltask/actions/workflows/release.yml/badge.svg)](https://github.com/jacobdanielrose/terminaltask/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/jacobdanielrose/terminaltask/branch/main/graph/badge.svg)](https://codecov.io/gh/jacobdanielrose/terminaltask)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jacobdanielrose/terminaltask)](https://goreportcard.com/report/github.com/jacobdanielrose/terminaltask)
 
-TerminalTask is a task management application designed to run directly in your terminal. It provides a simple and intuitive interface for managing reminders and to-do lists using the minimalist, text-based charm of terminal applications.
+terminaltask is a keyboard-driven task manager that runs directly in your terminal. It provides a clean, minimal interface for capturing, reviewing, and updating tasks without leaving the command line.
 
 ## Features
 
-- **Task Management:** Create, edit, delete, and mark tasks as completed.
-- **Visual Interface:** Navigate through tasks with a comprehensive list view.
-- **Styling:** Uses `lipgloss` for a visually appealing terminal UI.
-- **Date Picker:** Easily set due dates for tasks with a keyboard-driven date picker.
-- **Help Menu:** Quickly access help information and keyboard shortcuts.
+- **Task management:** Create, edit, delete, and mark tasks as completed.
+- **List view:** Navigate through tasks with a focused, scrollable list.
+- **Keyboard first:** Drive everything with keys – no mouse required.
+- **Date picker:** Set due dates via a keyboard-driven date picker.
+- **Inline help:** Toggle contextual help with key bindings in both list and edit views.
+- **Themed UI:** Uses `lipgloss` and other Charm libraries for a pleasant terminal UI.
 
 ## Installation
 
-Ensure you have Go installed (version 1.16 or higher is recommended).
+Ensure you have Go installed (version 1.20 or higher is recommended).
 
 ### Building from Source
 
 1. Clone the repository:
-   ```/dev/null/sh#L1-1
-   git clone https://github.com/jacobdanielrose/terminaltask.git
-   ```
 
-2. Change to the project directory:
-   ```/dev/null/sh#L1-1
+   ```/dev/null/sh#L1-3
+   git clone https://github.com/jacobdanielrose/terminaltask.git
    cd terminaltask
    ```
 
-3. Build the application using the Makefile:
-   ```/dev/null/sh#L1-1
-   make build
-   ```
+2. Build the application using the Makefile:
 
-4. Run the application:
-   ```/dev/null/sh#L1-1
+   ```/dev/null/sh#L5-6
+   make build
    ./bin/terminaltask
    ```
 
 ### Downloading Binaries
 
-For local installation, you can download the pre-built binaries from the GitHub releases section:
+You can also download pre-built binaries from the GitHub releases page:
 
 - https://github.com/jacobdanielrose/terminaltask/releases
 
-Download the appropriate archive for your OS, extract it, and run the binary.
+Download the appropriate archive for your OS, extract it, and run the binary from your terminal.
 
 ## Usage
 
 - **Navigation:**
-  - Use arrow keys and `j/k` to navigate through the task list.
-  - Press `e` to edit a selected task.
+  - Use arrow keys or `j/k` to move through the task list.
   - Press `n` to create a new task.
-  - Use `esc` to exit the edit mode.
-  - `ctrl+c` at any time quits the program.
-  - `space` to mark a task as completed.
+  - Press `e` to edit the currently selected task.
+  - Press `space` to toggle a task as completed.
+  - Press `esc` to exit edit mode.
+  - Press `ctrl+c` at any time to quit.
 
 - **Editing:**
-  - Text input fields for title, description.
-  - [Datepicker](https://github.com/EthanEFung/bubble-datepicker) (thanks EthanEFung!) for selecting the task's due date.
-  - Save changes by navigating through fields `enter` and saving `ctrl+s` when done.
-  - To exit the edit menu (without saving) press `esc`.
+  - Text input fields for title and description.
+  - [bubble-datepicker](https://github.com/EthanEFung/bubble-datepicker) (thanks EthanEFung!) for selecting task due dates.
+  - Use `enter` to move between fields.
+  - When the date picker is focused, press `tab` to move focus from the year/month header down to the calendar, and `shift+tab` to move focus back up to the header.
+  - Press `ctrl+s` to save changes.
+  - Press `esc` to exit the edit menu without saving.
 
 - **Shortcuts:**
   - `?` to toggle the help menu and view key bindings in the list view.
   - `ctrl+o` to toggle the help menu and view key bindings in the edit view.
 
-## Development
+## Testing
 
-This project is still very much being actively developed. Planned  tweaks and big changes include:
+This project uses Go’s standard testing tools.
 
-- Ability to filter out already completed tasks.
-- Ability to filter by descriptions.
-- Ability to synchronize with an external calDav server (will definitely come last).
+- Run all tests:
 
-If you can think of any helpful tweaks and even completely new features, please feel free to reach out at `jacobdanielrose@protonmail.com`.
+  ```/dev/null/sh#L1-1
+  make test
+  ```
+
+- Run tests with coverage (-cover):
+
+  ```/dev/null/sh#L1-1
+  make test cover
+  ```
+
+- Generate a coverage profile:
+
+  ```/dev/null/sh#L1-3
+  make test coverage
+  ```
+
+Continuous integration runs the test suite and updates coverage on every push and pull request.
+
+## Development / Roadmap
+
+This project is actively developed. Some planned enhancements include:
+
+- [ ] Expanding test coverage across core packages (`internal/task`, `internal/store`, `internal/app`).
+- [ ] Filtering out completed tasks.
+- [ ] Filtering by description.
+- [ ] Synchronizing with an external CalDAV server.
+
+
+If you have ideas for improvements or new features, feel free to open an issue or reach out at `jacobdanielrose@protonmail.com`.
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request with your updates. I'm not the most disciplined developer ever so I will probably only start writing tests when I'm finished with the main features of the project. Feel free to create or include your own tests if you please.
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.  
+Tests are appreciated where practical, especially for core behavior in the task model, storage, and app update logic.
 
 ## License
 
