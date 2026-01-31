@@ -27,7 +27,10 @@ release:
 	git push origin $(VERSION)
 
 test:
-	go test ./...
+	go test ./... -cover
+
+coverage:
+	go test ./... -coverprofile=coverage.out
 
 lint:
 	golangci-lint run
