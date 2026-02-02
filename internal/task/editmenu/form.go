@@ -20,7 +20,7 @@ const (
 	formCalendarPadding = 10
 )
 
-// Form is a Bubble Tea sub-model that encapsulates the editable task fields.
+// Form is a Bubble Tea sub-model that encapsulates the editable task
 type Form struct {
 	Title    textinput.Model
 	Desc     textinput.Model
@@ -32,6 +32,8 @@ type Form struct {
 	styles Styles
 }
 
+// NewForm constructs a Form with initial values for the task fields,
+// defaulting the due date to now if it is zero.
 func NewForm(
 	title, desc string,
 	dueDate time.Time,
@@ -55,6 +57,7 @@ func NewForm(
 	}
 }
 
+// newTitleInput configures a text input for the title field.
 func newTitleInput(initial string) textinput.Model {
 	ti := textinput.New()
 	ti.Prompt = defaultTitlePrompt
@@ -66,6 +69,7 @@ func newTitleInput(initial string) textinput.Model {
 	return ti
 }
 
+// newDescInput configures a text input for the description field.
 func newDescInput(initial string) textinput.Model {
 	ti := textinput.New()
 	ti.Prompt = defaultDescPrompt
@@ -76,6 +80,8 @@ func newDescInput(initial string) textinput.Model {
 	return ti
 }
 
+// Update processes incoming messages for the form, cycling focus on
+// SaveField and delegating updates to each sub-input.
 func (f Form) Update(msg tea.Msg) (Form, tea.Cmd) {
 	var cmds []tea.Cmd
 
@@ -102,6 +108,8 @@ func (f Form) Update(msg tea.Msg) (Form, tea.Cmd) {
 	return f, tea.Batch(cmds...)
 }
 
+// setFocus applies focus to the active field based on the current
+// focus index and blurs all others.
 func (f Form) setFocus() Form {
 	f.Title.Blur()
 	f.Desc.Blur()
@@ -120,6 +128,7 @@ func (f Form) setFocus() Form {
 	return f
 }
 
+// View renders the form
 func (f Form) View() string {
 	f.Title.TextStyle = f.styles.Normal
 	f.Title.PromptStyle = f.styles.Normal

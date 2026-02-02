@@ -23,6 +23,8 @@ const (
 // Delegate
 //
 
+// TaskDelegate implements list.ItemDelegate for Task items, handling
+// rendering and key bindings for actions on tasks in the list.
 type TaskDelegate struct {
 	Styles  Styles
 	height  int
@@ -30,6 +32,7 @@ type TaskDelegate struct {
 	keymap  *TaskKeyMap
 }
 
+// NewTaskDelegate constructs a TaskDelegate with default styles and keymap.
 func NewTaskDelegate() TaskDelegate {
 	return TaskDelegate{
 		Styles:  newTaskStyles(),
@@ -39,9 +42,13 @@ func NewTaskDelegate() TaskDelegate {
 	}
 }
 
-func (t TaskDelegate) Height() int  { return t.height }
+// Height returns the number of lines used to render each task.
+func (t TaskDelegate) Height() int { return t.height }
+
+// Spacing returns the number of blank lines between rendered tasks.
 func (t TaskDelegate) Spacing() int { return t.spacing }
 
+// Update handles key events for the list delegate
 func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -69,6 +76,8 @@ func (t TaskDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
+// Render draws a Task into the list, applying styles for selection,
+// filtering, and completion state.
 func (t TaskDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	var (
 		title, desc, date string
@@ -174,6 +183,8 @@ func (t TaskDelegate) Render(w io.Writer, m list.Model, index int, item list.Ite
 	}
 }
 
+// ShortHelp implements the help.KeyMap interface for condensed help
+// for task-related key bindings.
 func (t TaskDelegate) ShortHelp() []key.Binding {
 	return []key.Binding{
 		t.keymap.ToggleDone,
@@ -182,6 +193,8 @@ func (t TaskDelegate) ShortHelp() []key.Binding {
 	}
 }
 
+// FullHelp implements the help.KeyMap interface for the full help view
+// of task-related key bindings.
 func (t TaskDelegate) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{

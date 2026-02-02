@@ -119,6 +119,45 @@ func TestFileTaskStore_Save_EmptySlice(t *testing.T) {
 	}
 }
 
+func TestFileTaskStore_Save_RenameError(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "tasks.json")
+
+	s := NewFileTaskStore(path)
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatalf("MkdirAll error =%v", err)
+	}
+
+	// Create directory at final path to cause Rename to fail
+	if err := os.Mkdir(path, 0o755); err != nil {
+		t.Fatalf("Mkdir(path) error =%v, want nil", err)
+	}
+
+	err := s.Save([]task.Task{{TitleStr: "x"}})
+	if err == nil {
+		t.Fatalf("Save() error = nil, want non-nil")
+	}
+}
+
+func TestFileTaskStore_Save_WriteFileError(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "tasks.json")
+
+	s := NewFileTaskStore(path)
+
+	// make dir insteaf of file to force save error
+	tmpPath := path + ".tmp"
+	if err := os.Mkdir(tmpPath, 0o755); err != nil {
+		t.Fatalf("Mkdir(tmpPath) error = %v, want nil", err)
+	}
+
+	err := s.Save([]task.Task{{TitleStr: "x"}})
+	if err == nil {
+		t.Fatalf("Save() error = nil, want non-nil when WriteFile fails")
+	}
+}
+
 func TestFileTaskStore_Save_MkdirAllError(t *testing.T) {
 	dir := t.TempDir()
 
@@ -240,6 +279,27 @@ func TestFileTaskStore_Load_InvalidJSON(t *testing.T) {
 	}
 	if tasks != nil {
 		t.Fatalf("Load() tasks is not nil, want nil")
+	}
+}
+
+func TestFileTaskStore_Load_ReadFileError(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "not_a_file")
+
+	// Make dir instead of file to force error.
+	if err := os.Mkdir(path, 0o755); err != nil {
+		t.Fatalf("Mkdir error = %v, want nil", err)
+	}
+
+	s := NewFileTaskStore(path)
+
+	tasks, err := s.Load()
+	if err == nil {
+		t.Fatalf("Load() error = nil, want non-nil for ReadFile failure")
+	}
+
+	if tasks != nil {
+		t.Fatalf("Load() tasks = %v, want nil on error", tasks)
 	}
 }
 

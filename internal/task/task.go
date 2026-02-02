@@ -1,3 +1,5 @@
+// Package task defines the Task type and related styles, key bindings,
+// and messages used to represent and render tasks in the list view.
 package task
 
 import (
@@ -20,20 +22,32 @@ const (
 // Messages
 //
 
+// EnterEditMsg signals that the user wants to edit the currently
+// selected task in the list.
 type EnterEditMsg struct{}
+
+// ToggleDoneMsg signals that the user toggled the completion state
+// of the currently selected task.
 type ToggleDoneMsg struct{}
+
+// DeleteMsg signals that the user requested deletion of the
+// currently selected task.
 type DeleteMsg struct{}
 
 //
 // Styles
 //
 
+// subStyle groups styles for the individual parts of a task: title,
+// description, and due date.
 type subStyle struct {
 	Title lipgloss.Style
 	Desc  lipgloss.Style
 	Date  lipgloss.Style
 }
 
+// Styles contains all styles used to render tasks in the list,
+// including normal, selected, dimmed, and filter match highlighting.
 type Styles struct {
 	// The Normal state.
 	Normal subStyle
@@ -47,9 +61,12 @@ type Styles struct {
 	// Characters matching the current filter, if any.
 	FilterMatch lipgloss.Style
 
+	// StatusMessage styles status text shown for task operations.
 	StatusMessage lipgloss.Style
 }
 
+// newTaskStyles constructs the default Styles used for rendering
+// tasks in the list.
 func newTaskStyles() Styles {
 	return Styles{
 		Normal: subStyle{
@@ -99,12 +116,16 @@ func newTaskStyles() Styles {
 // Keymap
 //
 
+// TaskKeyMap defines key bindings for actions on a single task in
+// the list, such as editing, toggling completion, and removing.
 type TaskKeyMap struct {
 	EditItem   key.Binding
 	ToggleDone key.Binding
 	RemoveItem key.Binding
 }
 
+// newTaskKeyMap constructs the default key bindings used for tasks
+// in the list.
 func newTaskKeyMap() *TaskKeyMap {
 	return &TaskKeyMap{
 		EditItem: key.NewBinding(
@@ -122,6 +143,7 @@ func newTaskKeyMap() *TaskKeyMap {
 	}
 }
 
+// ShortHelp implements the help.KeyMap interface for condensed help.
 func (t TaskKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
 		t.ToggleDone,
@@ -130,6 +152,8 @@ func (t TaskKeyMap) ShortHelp() []key.Binding {
 	}
 }
 
+// FullHelp implements the help.KeyMap interface for the full help
+// view for task-related key bindings.
 func (t TaskKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{
@@ -144,6 +168,8 @@ func (t TaskKeyMap) FullHelp() [][]key.Binding {
 // Task model
 //
 
+// Task represents a single task, including ID, title, description,
+// due date, and completion status.
 type Task struct {
 	taskID   uuid.UUID
 	TitleStr string
@@ -152,18 +178,27 @@ type Task struct {
 	Done     bool
 }
 
+// FilterValue implements list.Item and is used by the list filter.
 func (t Task) FilterValue() string { return t.TitleStr }
-func (t Task) Title() string       { return t.TitleStr }
+
+// Title returns the task title.
+func (t Task) Title() string { return t.TitleStr }
+
+// Description returns the task description.
 func (t Task) Description() string { return t.DescStr }
 
+// GetID returns the task's unique identifier.
 func (t Task) GetID() uuid.UUID {
 	return t.taskID
 }
 
+// SetID sets the task's unique identifier.
 func (t *Task) SetID(id uuid.UUID) {
 	t.taskID = id
 }
 
+// IsEmpty reports whether the task has no title, description, due
+// date, and is not marked as done.
 func (t Task) IsEmpty() bool {
 	return t.TitleStr == "" &&
 		t.DescStr == "" &&
@@ -171,6 +206,7 @@ func (t Task) IsEmpty() bool {
 		!t.Done
 }
 
+// New constructs a new, empty Task with a generated ID.
 func New() Task {
 	return Task{
 		taskID:   uuid.New(),
@@ -181,6 +217,8 @@ func New() Task {
 	}
 }
 
+// NewWithOptions constructs a Task with the provided values and a
+// generated ID.
 func NewWithOptions(title, desc string, duedate time.Time, done bool) Task {
 	return Task{
 		taskID:   uuid.New(),

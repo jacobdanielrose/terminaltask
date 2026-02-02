@@ -1,3 +1,6 @@
+// Package app contains the primary Bubble Tea application model for
+// terminaltask. It wires together the list view, edit menu, storage
+// service, and configuration to provide the main interactive program.
 package app
 
 import (
@@ -23,17 +26,22 @@ const (
 	listModelTitle = "Terminal Task"
 )
 
+// statusMessageStyles groups the global styles used for rendering
+// success and error status messages throughout the application.
 type statusMessageStyles struct {
 	SuccessStyle lipgloss.Style
 	ErrorStyle   lipgloss.Style
 }
 
-// ListStyles contains styles for the task list view.
+// ListStyles contains styles for the task list view, including the
+// list title styling applied at the top of the list component.
 type ListStyles struct {
 	Title lipgloss.Style
 }
 
-// AppStyles is the top-level style graph for the application.
+// AppStyles is the top-level style graph for the application. It
+// centralizes all styling concerns so that the model, update, and view
+// logic can share a consistent visual configuration.
 type AppStyles struct {
 	// Frame is the global application frame (padding/margins) applied
 	// around both the list view and the editmenu view.
@@ -84,15 +92,34 @@ func newAppStyles() AppStyles {
 	}
 }
 
+// model is the root Bubble Tea model for terminaltask. It coordinates
+// the task list, edit menu, current application state, styles, and
+// backing task service.
 type model struct {
-	list     list.Model
+	// list is the main task list view.
+	list list.Model
+
+	// editmenu is the sub-model responsible for editing/creating tasks.
 	editmenu editmenu.Model
-	state    state
-	keymap   *listKeyMap
-	styles   AppStyles
-	service  taskservice.Service
+
+	// state tracks whether the user is interacting with the list or
+	// the edit menu.
+	state state
+
+	// keymap holds global key bindings for list-level interactions.
+	keymap *listKeyMap
+
+	// styles contains all top-level styling information for the app.
+	styles AppStyles
+
+	// service abstracts persistence and higher-level task operations.
+	service taskservice.Service
 }
 
+// NewModel constructs a new application model wired with the provided
+// configuration and task service. It initializes the list and edit
+// menu sub-models and returns a Bubble Tea model ready for use in a
+// tea.Program.
 func NewModel(cfg config.Config, service taskservice.Service) tea.Model {
 	appStyles := newAppStyles()
 
@@ -112,6 +139,8 @@ func NewModel(cfg config.Config, service taskservice.Service) tea.Model {
 	}
 }
 
+// configureListModel applies application-specific configuration and
+// styling to the given list model
 func configureListModel(listModel list.Model, styles ListStyles) list.Model {
 	listModel.Title = listModelTitle
 	listModel.Styles.Title = styles.Title
@@ -121,12 +150,14 @@ func configureListModel(listModel list.Model, styles ListStyles) list.Model {
 	return listModel
 }
 
-// Convert Task to Item
+// taskToItem converts a Task into a list.Item.
 func taskToItem(t task.Task) list.Item {
 	return t
 }
 
-// Convert []task.Task to []list.Item
+// tasksToItems converts a slice of Task values into a slice of
+// list.Item so they can be displayed by the list component. It always
+// returns a non-nil slice.
 func tasksToItems(tasks []task.Task) []list.Item {
 	if tasks == nil {
 		return []list.Item{}
@@ -138,12 +169,13 @@ func tasksToItems(tasks []task.Task) []list.Item {
 	return items
 }
 
-// Convert Item to Task
+// itemToTask converts a list.Item back into a Task.
 func itemToTask(i list.Item) task.Task {
 	return i.(task.Task)
 }
 
-// Convert []list.Item to []task.Task
+// itemsToTasks converts a slice of list.Item values back into a slice
+// of Task. It always returns a non-nil slice.
 func itemsToTasks(items []list.Item) []task.Task {
 	if items == nil {
 		return []task.Task{}

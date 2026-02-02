@@ -1,3 +1,5 @@
+// Package editmenu provides a Bubble Tea sub-model for creating and
+// editing tasks, including a form, validation, and contextual help.
 package editmenu
 
 import (
@@ -34,8 +36,12 @@ const (
 // Messages
 //
 
+// EscapeEditMsg signals that the user wants to exit the edit menu
+// without saving the current changes.
 type EscapeEditMsg struct{}
 
+// SaveTaskMsg carries the data needed to save a task from the edit
+// menu back to the main application.
 type SaveTaskMsg struct {
 	TaskID uuid.UUID
 	Title  string
@@ -45,6 +51,7 @@ type SaveTaskMsg struct {
 	IsNew  bool
 }
 
+// ErrorMsg is a generic error message produced by the edit menu.
 type ErrorMsg struct {
 	ErrorStr string
 }
@@ -55,6 +62,9 @@ type clearStatusMsg struct{}
 // Styles
 //
 
+// Styles defines the visual configuration for the edit menu,
+// including title bar, help text, focused and normal field styles,
+// and status message styling.
 type Styles struct {
 	TitleBar lipgloss.Style
 	Title    lipgloss.Style
@@ -68,6 +78,7 @@ type Styles struct {
 	StatusMessage lipgloss.Style
 }
 
+// DefaultStyles returns the default Styles used by the edit menu.
 func DefaultStyles() (s Styles) {
 	s.TitleBar = lipgloss.NewStyle().Padding(0, 0, 1, 2) //nolint:mnd
 
@@ -97,6 +108,8 @@ func DefaultStyles() (s Styles) {
 // Keymap
 //
 
+// EditTaskKeyMap holds key bindings used within the edit menu for
+// saving fields, exiting, toggling help, and saving the task.
 type EditTaskKeyMap struct {
 	SaveField      key.Binding
 	EscapeEditMode key.Binding
@@ -105,6 +118,8 @@ type EditTaskKeyMap struct {
 	Quit           key.Binding
 }
 
+// newEditTaskKeyMap constructs the default key bindings for the
+// edit menu.
 func newEditTaskKeyMap() *EditTaskKeyMap {
 	return &EditTaskKeyMap{
 		SaveField: key.NewBinding(
@@ -126,6 +141,7 @@ func newEditTaskKeyMap() *EditTaskKeyMap {
 	}
 }
 
+// ShortHelp implements the help.KeyMap interface for condensed help.
 func (e EditTaskKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
 		e.SaveField,
@@ -135,6 +151,7 @@ func (e EditTaskKeyMap) ShortHelp() []key.Binding {
 	}
 }
 
+// FullHelp implements the help.KeyMap interface for full help view.
 func (e EditTaskKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{
@@ -151,7 +168,9 @@ func (e EditTaskKeyMap) FullHelp() [][]key.Binding {
 // Model & constructor
 //
 
-// Model for the edit menu.
+// Model is the Bubble Tea model for the edit menu. It owns the
+// embedded Form, layout state, styles, and key bindings used for
+// editing or creating a task.
 type Model struct {
 	// Identity / basic metadata
 	Title  string
@@ -177,7 +196,8 @@ type Model struct {
 	keymap *EditTaskKeyMap
 }
 
-// New constructs a new edit menu model with default styles.
+// New constructs a new edit menu model with default styles and
+// zeroed size. The size can be set later via SetSize.
 func New(task task.Task) Model {
 	return NewWithSize(0, 0, task)
 }
@@ -188,6 +208,8 @@ func NewWithStyles(task task.Task, menuStyles Styles, formStyles Styles) Model {
 	return NewWithSizeAndStyles(0, 0, task, menuStyles, formStyles)
 }
 
+// NewWithSize constructs a new edit menu model with an explicit
+// initial width and height using the default styles.
 func NewWithSize(
 	width, height int,
 	task task.Task,
@@ -268,6 +290,7 @@ func (m *Model) showStatus(msg string) tea.Cmd {
 	})
 }
 
+// Update handles all messages for the edit menu
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.form, cmd = m.form.Update(msg)
@@ -318,6 +341,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
+// SetSize updates the edit menu dimensions and internal help width.
 func (m Model) SetSize(width int, height int) Model {
 	m.width = width
 	m.help.Width = width
@@ -325,11 +349,13 @@ func (m Model) SetSize(width int, height int) Model {
 	return m
 }
 
+// SetShowTitle toggles rendering of the title bar.
 func (m Model) SetShowTitle(v bool) Model {
 	m.showTitle = v
 	return m
 }
 
+// SetShowHelp toggles rendering of the contextual help view.
 func (m Model) SetShowHelp(v bool) Model {
 	m.showHelp = v
 	return m
@@ -339,6 +365,7 @@ func (m Model) SetShowHelp(v bool) Model {
 // View
 //
 
+// View renders the edit menu
 func (m Model) View() string {
 	var (
 		sections    []string
@@ -376,6 +403,7 @@ func (m Model) View() string {
 	return lipgloss.JoinVertical(lipgloss.Left, sections...)
 }
 
+// titleView renders the window title bar when a title is available.
 func (m Model) titleView() string {
 	var (
 		view          string
@@ -391,23 +419,28 @@ func (m Model) titleView() string {
 	return view
 }
 
+// ShowTitle reports whether the title bar is currently enabled.
 func (m Model) ShowTitle() bool {
 	return m.showTitle
 }
 
-// ShowHelp returns whether or not the help is set to be rendered.
+// ShowHelp reports whether the help view is currently enabled.
 func (m Model) ShowHelp() bool {
 	return m.showHelp
 }
 
+// helpView renders the contextual help using the configured styles
+// and key bindings.
 func (m Model) helpView() string {
 	return m.styles.HelpStyle.Render(m.help.View(m.keymap))
 }
 
+// Width returns the current width of the edit menu.
 func (m Model) Width() int {
 	return m.width
 }
 
+// Height returns the current height of the edit menu.
 func (m Model) Height() int {
 	return m.height
 }

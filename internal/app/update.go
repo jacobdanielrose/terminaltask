@@ -1,3 +1,7 @@
+// Package app contains the primary Bubble Tea application update loop for
+// terminaltask. It defines how the root model initializes, responds to
+// incoming messages, and coordinates state transitions between the list
+// and edit views.
 package app
 
 import (
@@ -23,20 +27,27 @@ const (
 	statusMsgCreatedTask   = "Created new task: \"%s\""
 )
 
+// In this application, it triggers loading tasks from the backing service.
 func (m model) Init() tea.Cmd {
 	return m.loadTasksCmd()
 }
 
-// renderSuccessStatus formats a success status message with global styles.
+// renderSuccessStatus formats a success status message using the
+// application-wide success style. It is used when operations like
+// saving or editing tasks complete successfully.
 func (m model) renderSuccessStatus(msg string) string {
 	return m.styles.Status.SuccessStyle.Render(msg)
 }
 
-// renderErrorStatus formats an error status message with global styles.
+// renderErrorStatus formats an error status message using the
+// application-wide error style. It is used when persistence or other
+// operations fail and a message should be shown in the status bar.
 func (m model) renderErrorStatus(msg string) string {
 	return m.styles.Status.ErrorStyle.Render(msg)
 }
 
+// Update implements the Bubble Tea Update method for the root
+// application model.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Global key handling (applies in all states)
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
@@ -126,6 +137,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// saveTask handles an editmenu.SaveTaskMsg by either updating an
+// existing task in the list or inserting a new one. It then switches
+// back to the list state and returns a command that persists the
+// updated tasks and shows an appropriate status message.
 func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
 	t := task.Task{
 		TitleStr: msg.Title,
@@ -153,6 +168,10 @@ func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
 	return m, m.saveTasksCmd(tasks, statusText)
 }
 
+// stateListUpdate handles messages that should be processed while the
+// application is in the list state. It is responsible for responding
+// to list-specific keybindings (such as creating a new task) and for
+// delegating messages down to the list sub-model.
 func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -173,6 +192,9 @@ func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
 	return m, cmd
 }
 
+// stateEditUpdate handles messages that should be processed while the
+// application is in the edit state. It delegates the message to the
+// edit menu sub-model and returns the updated root model and command.
 func (m model) stateEditUpdate(msg tea.Msg) (model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.editmenu, cmd = m.editmenu.Update(msg)

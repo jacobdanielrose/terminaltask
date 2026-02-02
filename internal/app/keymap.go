@@ -4,11 +4,13 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 )
 
+// listKeyMap defines key bindings for interacting with the task list.
 type listKeyMap struct {
 	NewItem key.Binding
 	Quit    key.Binding
 }
 
+// NewListKeyMap constructs the default key bindings for the list view.
 func NewListKeyMap() *listKeyMap {
 	return &listKeyMap{
 		NewItem: key.NewBinding(

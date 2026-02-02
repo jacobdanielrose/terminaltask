@@ -12,7 +12,7 @@ type FileTaskService struct {
 	store store.TaskStore
 }
 
-func NewFileTaskService(s store.TaskStore) *FileTaskService {
+func NewFileTaskService(s store.TaskStore) Service {
 	return &FileTaskService{store: s}
 }
 
