@@ -74,7 +74,7 @@ homebrew_casks:
 
     # Use the macOS build to back this cask
     ids:
-      - terminaltask-mac
+      - terminaltask-mac-archive
 
     description: "TUI task manager built with Bubble Tea"
     homepage: "https://github.com/jacobdanielrose/terminaltask"
