@@ -18,9 +18,18 @@ terminaltask is a keyboard-driven task manager that runs directly in your termin
 
 ## Installation
 
-Ensure you have Go installed (version 1.20 or higher is recommended).
+### Homebrew (macOS)
+
+You can install `terminaltask` using Homebrew via the tap:
+
+```/dev/null/sh#L1-2
+brew tap jacobdanielrose/homebrew-tap
+brew install --cask terminaltask
+```
 
 ### Building from Source
+
+Ensure you have Go installed (version 1.20 or higher is recommended).
 
 1. Clone the repository:
 
