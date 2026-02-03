@@ -38,7 +38,19 @@ builds:
       - -X main.buildDate={{.Date}}
 
 archives:
-  - formats: ["tar.gz", "zip"]
+  - id: terminaltask-mac-archive
+    builds:
+      - terminaltask-mac
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+  - id: terminaltask-linux-archive
+    builds:
+      - terminaltask-linux
+    format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
