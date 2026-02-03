@@ -18,6 +18,8 @@ const (
 
 	// Padding to indent the datepicker calendar within the form.
 	formCalendarPadding = 10
+
+	defaultTextInputWidth = 120
 )
 
 // Form is a Bubble Tea sub-model that encapsulates the editable task
@@ -68,6 +70,7 @@ func newTitleInput(initial string) textinput.Model {
 	ti.SetValue(initial)
 	ti.SetCursor(len(initial))
 	ti.Focus()
+	ti.Width = defaultTextInputWidth
 	return ti
 }
 
@@ -79,6 +82,7 @@ func newDescInput(initial string) textinput.Model {
 	ti.Placeholder = defaultDescPlaceholder
 	ti.SetValue(initial)
 	ti.SetCursor(len(initial))
+	ti.Width = defaultTextInputWidth
 	return ti
 }
 

@@ -4,8 +4,13 @@ import (
 	"testing"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	datepicker "github.com/ethanefung/bubble-datepicker"
 )
+
+//
+// Construction / datepicker initialization
+//
 
 func TestNewForm_DatepickerRange_ZeroDueDate(t *testing.T) {
 	var zeroDueDate time.Time
@@ -72,6 +77,104 @@ func TestNewForm_DatepickerRange_NonZeroDueDate(t *testing.T) {
 		t.Errorf("expected max to be zero (unbounded) or >= dueDate, got max=%v dueDate=%v", max, dueDate)
 	}
 }
+
+//
+// Focus handling
+//
+
+func TestNewForm_SetFocus(t *testing.T) {
+	f := NewForm("title", "desc", time.Time{}, false, newEditTaskKeyMap(), Styles{})
+	f = f.setFocus()
+
+	if !f.Title.Focused() {
+		t.Errorf("expected Title to be focused, got %v", f.Title.Focused())
+	}
+
+	f.focusIdx = focusIdxDesc
+	f = f.setFocus()
+
+	if !f.Desc.Focused() {
+		t.Errorf("expected Desc to be focused, got %v", f.Desc.Focused())
+	}
+
+	f.focusIdx = focusIdxDate
+	f = f.setFocus()
+
+	if f.Date.Focused == datepicker.FocusNone {
+		t.Errorf("expected Date to be focused")
+	}
+}
+
+//
+// Update / focus behavior
+//
+
+func TestNewForm_Update_FocusCycle(t *testing.T) {
+	f := NewForm("title", "desc", time.Time{}, false, newEditTaskKeyMap(), Styles{})
+	msg := tea.KeyMsg{Type: tea.KeyEnter}
+
+	// make sure the index cycles properly
+	if f.focusIdx != focusIdxTitle {
+		t.Errorf("expected focusIdx to be focusIdxTitle, got %v", f.focusIdx)
+	}
+
+	f, _ = f.Update(msg)
+	if f.focusIdx != focusIdxDesc {
+		t.Errorf("expected focusIdx to be focusIdxDesc, got %v", f.focusIdx)
+	}
+
+	f, _ = f.Update(msg)
+	if f.focusIdx != focusIdxDate {
+		t.Errorf("expected focusIdx to be focusIdxDate, got %v", f.focusIdx)
+	}
+
+	// make sure it cycles back to the title
+	f, _ = f.Update(msg)
+	if f.focusIdx != focusIdxTitle {
+		t.Errorf("expected focusIdx to be focusIdxTitle, got %v", f.focusIdx)
+	}
+}
+
+//
+// Text input configuration
+//
+
+func TestNewForm_TextInputs(t *testing.T) {
+	f := NewForm("title", "description", time.Time{}, false, newEditTaskKeyMap(), Styles{})
+
+	if f.Title.Prompt != defaultTitlePrompt {
+		t.Errorf("expected Title.Prompt to be %q, got %q", defaultTitlePrompt, f.Title.Prompt)
+	}
+	if f.Title.Placeholder != defaultTitlePlaceholder {
+		t.Errorf("expected Title.Placeholder to be %q, got %q", defaultTitlePlaceholder, f.Title.Placeholder)
+	}
+
+	if f.Desc.Prompt != defaultDescPrompt {
+		t.Errorf("expected Desc.Prompt to be %q, got %q", defaultDescPrompt, f.Desc.Prompt)
+	}
+	if f.Desc.Placeholder != defaultDescPlaceholder {
+		t.Errorf("expected Desc.Placeholder to be %q, got %q", defaultDescPlaceholder, f.Desc.Placeholder)
+	}
+
+	if f.Title.Value() != "title" {
+		t.Errorf("expected Title.Value to be %q, got %q", "title", f.Title.Value())
+	}
+
+	if f.Desc.Value() != "description" {
+		t.Errorf("expected Desc.Value to be %q, got %q", "description", f.Desc.Value())
+	}
+
+	if f.Title.Width != defaultTextInputWidth {
+		t.Errorf("expected Title.Width to be %d, got %d", defaultTextInputWidth, f.Title.Width)
+	}
+	if f.Desc.Width != defaultTextInputWidth {
+		t.Errorf("expected Desc.Width to be %d, got %d", defaultTextInputWidth, f.Desc.Width)
+	}
+}
+
+//
+// Test helpers
+//
 
 func isUninitializedDatepicker(m datepicker.Model) bool {
 	if m.Focused != datepicker.Focus(0) {
