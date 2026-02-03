@@ -51,3 +51,30 @@ release:
   github:
     owner: "jacobdanielrose"
     name: "terminaltask"
+
+brews:
+  - name: terminaltask
+
+    # Where the formula will live (your tap repo)
+    repository:
+      owner: jacobdanielrose
+      name: terminaltask
+
+    # Use the macOS build for the formula
+    ids:
+      - terminaltask-mac
+
+    description: "TUI task manager built with Bubble Tea"
+    homepage: "https://github.com/jacobdanielrose/terminaltask"
+
+    # How Homebrew installs your binary from the tarball
+    install: |
+      bin.install "terminaltask"
+
+    # Basic Homebrew test
+    test: |
+      system "#{bin}/terminaltask", "--version"
+
+    commit_author:
+      name: "Jacob Rose"
+      email: "you@example.com" # update
