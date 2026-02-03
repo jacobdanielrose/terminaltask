@@ -171,11 +171,11 @@ func (t TaskKeyMap) FullHelp() [][]key.Binding {
 // Task represents a single task, including ID, title, description,
 // due date, and completion status.
 type Task struct {
-	taskID   uuid.UUID
-	TitleStr string
-	DescStr  string
-	DueDate  time.Time
-	Done     bool
+	ID       uuid.UUID `json:"ID"`
+	TitleStr string    `json:"TitleStr"`
+	DescStr  string    `json:"DescStr"`
+	DueDate  time.Time `json:"DueDate"`
+	Done     bool      `json:"Done"`
 }
 
 // FilterValue implements list.Item and is used by the list filter.
@@ -189,12 +189,12 @@ func (t Task) Description() string { return t.DescStr }
 
 // GetID returns the task's unique identifier.
 func (t Task) GetID() uuid.UUID {
-	return t.taskID
+	return t.ID
 }
 
 // SetID sets the task's unique identifier.
 func (t *Task) SetID(id uuid.UUID) {
-	t.taskID = id
+	t.ID = id
 }
 
 // IsEmpty reports whether the task has no title, description, due
@@ -209,7 +209,7 @@ func (t Task) IsEmpty() bool {
 // New constructs a new, empty Task with a generated ID.
 func New() Task {
 	return Task{
-		taskID:   uuid.New(),
+		ID:       uuid.New(),
 		TitleStr: "",
 		DescStr:  "",
 		// leave Duedate null here
@@ -221,7 +221,7 @@ func New() Task {
 // generated ID.
 func NewWithOptions(title, desc string, duedate time.Time, done bool) Task {
 	return Task{
-		taskID:   uuid.New(),
+		ID:       uuid.New(),
 		TitleStr: title,
 		DescStr:  desc,
 		DueDate:  duedate,

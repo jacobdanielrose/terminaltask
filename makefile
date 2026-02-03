@@ -16,6 +16,7 @@ build:
 	-o bin/terminaltask ./cmd/terminaltask
 
 run: build
+	./setup.sh
 	./bin/terminaltask
 
 release:

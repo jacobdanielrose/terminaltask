@@ -38,3 +38,6 @@ coverage.*
 .DS_Store
 # Added by goreleaser init:
 dist/
+
+
+tasks.json

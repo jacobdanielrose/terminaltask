@@ -15,19 +15,21 @@ import (
 	"github.com/jacobdanielrose/terminaltask/internal/task/editmenu"
 )
 
-// Extract magic strings to constants
+// Extract magic strings to constants.
 const (
-	// Generic error text for failed saves
-	statusMsgSaveError = "Error saving!"
+	// Generic error text for failed saves.
+	statusMsgSaveError   = "Error saving!"
+	statusMsgDeleteError = "Error deleting task!"
 
-	// Success status templace
+	// Success status templates.
 	statusMsgEditedTask    = "Edited: \"%s\""
 	statusMsgDeletedTask   = "Deleted: \"%s\""
 	statusMsgCompletedTask = "Completed: \"%s\""
 	statusMsgCreatedTask   = "Created new task: \"%s\""
 )
 
-// In this application, it triggers loading tasks from the backing service.
+// Init implements tea.Model and, in this application, triggers loading
+// tasks from the backing service.
 func (m model) Init() tea.Cmd {
 	return m.loadTasksCmd()
 }
@@ -47,94 +49,138 @@ func (m model) renderErrorStatus(msg string) string {
 }
 
 // Update implements the Bubble Tea Update method for the root
-// application model.
+// application model. It delegates high-level messages first, then
+// routes to the appropriate state-specific update function.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// Global key handling (applies in all states)
+	// Global key handling (applies in all states).
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if key.Matches(keyMsg, m.keymap.Quit) {
-			// ctrl+c: always quit the app, no matter where we are
+			// Ctrl+C: always quit the app, no matter where we are.
 			return m, tea.Quit
 		}
 	}
 
+	// High-level message routing.
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		h, v := m.styles.Frame.GetFrameSize()
-		contentW, contentH := msg.Width-h, msg.Height-v
-		m.list.SetSize(contentW, contentH)
-		m.editmenu = m.editmenu.SetSize(contentW, contentH)
-		return m, nil
+		return m.resizeWindow(msg)
 
 	case editmenu.EscapeEditMsg:
 		m.state = stateList
 		return m, nil
 
 	case task.EnterEditMsg:
-		item := m.list.SelectedItem()
-		if item == nil {
-			return m, nil
-		}
-		t := item.(task.Task)
-		w, h := m.editmenu.Width(), m.editmenu.Height()
-		m.editmenu = editmenu.NewWithSize(w, h, t)
-		m.state = stateEdit
-		return m, nil
+		return m.enterEditMenu()
 
 	case editmenu.SaveTaskMsg:
 		return m.saveTask(msg)
 
 	case task.ToggleDoneMsg:
-		item := m.list.SelectedItem()
-		if item == nil {
-			return m, nil
-		}
-		task := item.(task.Task)
-		index := m.list.Index()
-		task.Done = !task.Done
-		m.list.SetItem(index, task)
-		tasks := itemsToTasks(m.list.Items())
-
-		var statusText string
-		if task.Done {
-			statusText = fmt.Sprintf(statusMsgCompletedTask, task.Title())
-		} else {
-			statusText = fmt.Sprintf(statusMsgEditedTask, task.Title())
-		}
-		return m, m.saveTasksCmd(tasks, statusText)
+		return m.toggleDone()
 
 	case TasksSavedMsg:
-		cmd := m.list.NewStatusMessage(
-			m.renderSuccessStatus(msg.msg),
-		)
-		return m, cmd
+		return m.taskSaved(msg)
 
 	case TasksSaveErrorMsg:
-		cmd := m.list.NewStatusMessage(
-			m.renderErrorStatus(statusMsgSaveError),
-		)
-		log.Error("Error saving tasks", "err", msg.Err, "store", m.service.Name())
-		return m, cmd
+		return m.taskSaveError(msg)
 
 	case TasksLoadedMsg:
 		m.list.SetItems(tasksToItems(msg.Tasks))
 		return m, nil
 
 	case task.DeleteMsg:
-		index := m.list.Index()
-		tasks := itemsToTasks(m.list.Items())
-		deletedTask := tasks[index]
-		m.list.RemoveItem(index)
-		statusText := fmt.Sprintf(statusMsgDeletedTask, deletedTask.Title())
-		return m, m.saveTasksCmd(tasks, statusText)
+		return m.deleteTask()
 	}
 
+	// Fallback to state-specific handling.
 	switch m.state {
 	case stateList:
 		return m.stateListUpdate(msg)
 	case stateEdit:
 		return m.stateEditUpdate(msg)
+	default:
+		return m, nil
 	}
+}
+
+func (m model) resizeWindow(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
+	h, v := m.styles.Frame.GetFrameSize()
+	contentW, contentH := msg.Width-h, msg.Height-v
+	m.list.SetSize(contentW, contentH)
+	m.editmenu = m.editmenu.SetSize(contentW, contentH)
 	return m, nil
+}
+
+func (m model) enterEditMenu() (tea.Model, tea.Cmd) {
+	item := m.list.SelectedItem()
+	if item == nil {
+		return m, nil
+	}
+	t := item.(task.Task)
+	w, h := m.editmenu.Width(), m.editmenu.Height()
+	m.editmenu = editmenu.NewWithSize(w, h, t)
+	m.state = stateEdit
+	return m, nil
+}
+
+func (m model) toggleDone() (tea.Model, tea.Cmd) {
+	item := m.list.SelectedItem()
+	if item == nil {
+		return m, nil
+	}
+
+	taskItem := item.(task.Task)
+	index := m.list.Index()
+	taskItem.Done = !taskItem.Done
+	m.list.SetItem(index, taskItem)
+
+	tasks := itemsToTasks(m.list.Items())
+
+	var statusText string
+	if taskItem.Done {
+		statusText = fmt.Sprintf(statusMsgCompletedTask, taskItem.Title())
+	} else {
+		statusText = fmt.Sprintf(statusMsgEditedTask, taskItem.Title())
+	}
+
+	return m, m.saveTasksCmd(tasks, statusText)
+}
+
+func (m model) taskSaveError(msg TasksSaveErrorMsg) (tea.Model, tea.Cmd) {
+	cmd := m.list.NewStatusMessage(
+		m.renderErrorStatus(statusMsgSaveError),
+	)
+	log.Error("Error saving tasks", "err", msg.Err, "store", m.service.Name())
+	return m, cmd
+}
+
+func (m model) taskSaved(msg TasksSavedMsg) (tea.Model, tea.Cmd) {
+	cmd := m.list.NewStatusMessage(
+		m.renderSuccessStatus(msg.msg),
+	)
+	return m, cmd
+}
+
+func (m model) deleteTask() (tea.Model, tea.Cmd) {
+	index := m.list.Index()
+	taskItem, ok := m.list.SelectedItem().(task.Task)
+	if !ok {
+		return m, nil
+	}
+
+	if err := m.service.DeleteByID(taskItem.GetID()); err != nil {
+		cmd := m.list.NewStatusMessage(
+			m.renderErrorStatus(statusMsgDeleteError),
+		)
+		log.Error("Error deleting task", "err", err, "store", m.service.Name())
+		return m, cmd
+	}
+
+	m.list.RemoveItem(index)
+	cmd := m.list.NewStatusMessage(
+		m.renderSuccessStatus(fmt.Sprintf(statusMsgDeletedTask, taskItem.Title())),
+	)
+	return m, cmd
 }
 
 // saveTask handles an editmenu.SaveTaskMsg by either updating an
@@ -142,22 +188,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // back to the list state and returns a command that persists the
 // updated tasks and shows an appropriate status message.
 func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
-	t := task.Task{
-		TitleStr: msg.Title,
-		DescStr:  msg.Desc,
-		DueDate:  msg.Date,
-		Done:     msg.Done,
-	}
-	t.SetID(msg.TaskID)
+	t := task.NewWithOptions(
+		msg.Title,
+		msg.Desc,
+		msg.Date,
+		msg.Done,
+	)
 
 	index := -1
 	var statusText string
 
 	if len(m.list.Items()) != 0 && !msg.IsNew {
+		// Existing task, preserve ID.
+		t.SetID(msg.TaskID)
+
 		index = m.list.Index()
 		m.list.SetItem(index, t)
 		statusText = fmt.Sprintf(statusMsgEditedTask, t.Title())
 	} else {
+		// New task: use the ID generated by NewWithOptions.
 		m.list.InsertItem(index, t)
 		statusText = fmt.Sprintf(statusMsgCreatedTask, t.Title())
 	}
@@ -165,7 +214,18 @@ func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
 	m.state = stateList
 	tasks := itemsToTasks(m.list.Items())
 
-	return m, m.saveTasksCmd(tasks, statusText)
+	if err := m.service.SaveTasks(tasks); err != nil {
+		cmd := m.list.NewStatusMessage(
+			m.renderErrorStatus(statusMsgSaveError),
+		)
+		log.Error("Error saving tasks", "err", err, "store", m.service.Name())
+		return m, cmd
+	}
+
+	cmd := m.list.NewStatusMessage(
+		m.renderSuccessStatus(statusText),
+	)
+	return m, cmd
 }
 
 // stateListUpdate handles messages that should be processed while the
@@ -175,10 +235,11 @@ func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
 func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		// Disables other keys if actively filtering
+		// Disable other keys if actively filtering.
 		if m.list.FilterState() == list.Filtering {
 			break
 		}
+		// New item: open the edit menu with an empty task.
 		if key.Matches(msg, m.keymap.NewItem) {
 			newTask := task.New()
 			w, h := m.editmenu.Width(), m.editmenu.Height()
