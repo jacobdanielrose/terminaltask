@@ -29,10 +29,10 @@ release:
 test:
 	go test ./...
 
-test cover:
+cover:
 	go test ./... -cover
 
-test coverage:
+coverage:
 	go test ./... -coverprofile=coverage.out
 
 lint:

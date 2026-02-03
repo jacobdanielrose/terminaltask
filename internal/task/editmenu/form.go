@@ -46,10 +46,12 @@ func NewForm(
 		dueDate = time.Now()
 	}
 
+	dp := datepicker.NewWithRange(dueDate, dueDate, time.Time{})
+
 	return Form{
 		Title:    newTitleInput(title),
 		Desc:     newDescInput(desc),
-		Date:     datepicker.New(dueDate),
+		Date:     dp,
 		Done:     done,
 		focusIdx: focusIdxTitle,
 		keymap:   keymap,
@@ -96,14 +98,19 @@ func (f Form) Update(msg tea.Msg) (Form, tea.Cmd) {
 
 	var cmd tea.Cmd
 
-	f.Title, cmd = f.Title.Update(msg)
-	cmds = append(cmds, cmd)
+	switch f.focusIdx {
+	case focusIdxTitle:
+		f.Title, cmd = f.Title.Update(msg)
+		cmds = append(cmds, cmd)
 
-	f.Desc, cmd = f.Desc.Update(msg)
-	cmds = append(cmds, cmd)
+	case focusIdxDesc:
+		f.Desc, cmd = f.Desc.Update(msg)
+		cmds = append(cmds, cmd)
 
-	f.Date, cmd = f.Date.Update(msg)
-	cmds = append(cmds, cmd)
+	case focusIdxDate:
+		f.Date, cmd = f.Date.Update(msg)
+		cmds = append(cmds, cmd)
+	}
 
 	return f, tea.Batch(cmds...)
 }

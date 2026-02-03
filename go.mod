@@ -8,9 +8,11 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/log v0.4.2
 	github.com/charmbracelet/x/ansi v0.8.0
-	github.com/ethanefung/bubble-datepicker v0.1.1
+	github.com/ethanefung/bubble-datepicker v0.0.1
 	github.com/google/uuid v1.6.0
 )
+
+replace github.com/ethanefung/bubble-datepicker => github.com/jacobdanielrose/bubble-datepicker v0.0.1
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
