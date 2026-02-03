@@ -38,7 +38,7 @@ builds:
       - -X main.buildDate={{.Date}}
 
 archives:
-  - format: tar.gz
+  - formats: ["tar.gz", "zip"]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
@@ -52,29 +52,22 @@ release:
     owner: "jacobdanielrose"
     name: "terminaltask"
 
-brews:
+homebrew_casks:
   - name: terminaltask
 
-    # Where the formula will live (your tap repo)
+    # Where the cask will live (your tap repo)
     repository:
       owner: jacobdanielrose
-      name: terminaltask
+      name: homebrew-tap # create this repo once on GitHub
 
-    # Use the macOS build for the formula
+    # Use the macOS build to back this cask
     ids:
       - terminaltask-mac
 
     description: "TUI task manager built with Bubble Tea"
     homepage: "https://github.com/jacobdanielrose/terminaltask"
 
-    # How Homebrew installs your binary from the tarball
-    install: |
-      bin.install "terminaltask"
-
-    # Basic Homebrew test
-    test: |
-      system "#{bin}/terminaltask", "--version"
-
+    # Optional: author of the commits into the tap repo
     commit_author:
       name: "Jacob Rose"
-      email: "you@example.com" # update
+      email: "you@example.com" # change this
