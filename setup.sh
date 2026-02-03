@@ -1,0 +1,1 @@
+export TERMINALTASK_CONFIG_DIR=$(pwd)

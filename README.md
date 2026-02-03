@@ -7,6 +7,8 @@
 
 terminaltask is a keyboard-driven task manager that runs directly in your terminal. It provides a clean, minimal interface for capturing, reviewing, and updating tasks without leaving the command line.
 
+![](https://raw.githubusercontent.com/jacobdanielrose/terminaltask/main/assets/terminaltask-demo.gif)
+
 ## Features
 
 - **Task management:** Create, edit, delete, and mark tasks as completed.
@@ -88,13 +90,13 @@ This project uses Go’s standard testing tools.
 - Run tests with coverage (-cover):
 
   ```/dev/null/sh#L1-1
-  make test cover
+  make cover
   ```
 
 - Generate a coverage profile:
 
   ```/dev/null/sh#L1-3
-  make test coverage
+  make coverage
   ```
 
 Continuous integration runs the test suite and updates coverage on every push and pull request.
