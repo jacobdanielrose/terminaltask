@@ -30,28 +30,28 @@ const (
 
 // Init implements tea.Model and, in this application, triggers loading
 // tasks from the backing service.
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return m.loadTasksCmd()
 }
 
 // renderSuccessStatus formats a success status message using the
 // application-wide success style. It is used when operations like
 // saving or editing tasks complete successfully.
-func (m model) renderSuccessStatus(msg string) string {
+func (m Model) renderSuccessStatus(msg string) string {
 	return m.styles.Status.SuccessStyle.Render(msg)
 }
 
 // renderErrorStatus formats an error status message using the
 // application-wide error style. It is used when persistence or other
 // operations fail and a message should be shown in the status bar.
-func (m model) renderErrorStatus(msg string) string {
+func (m Model) renderErrorStatus(msg string) string {
 	return m.styles.Status.ErrorStyle.Render(msg)
 }
 
 // Update implements the Bubble Tea Update method for the root
 // application model. It delegates high-level messages first, then
 // routes to the appropriate state-specific update function.
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Global key handling (applies in all states).
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if key.Matches(keyMsg, m.keymap.Quit) {
@@ -103,7 +103,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m model) resizeWindow(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
+func (m Model) resizeWindow(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	h, v := m.styles.Frame.GetFrameSize()
 	contentW, contentH := msg.Width-h, msg.Height-v
 	m.list.SetSize(contentW, contentH)
@@ -111,7 +111,7 @@ func (m model) resizeWindow(msg tea.WindowSizeMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) enterEditMenu() (tea.Model, tea.Cmd) {
+func (m Model) enterEditMenu() (tea.Model, tea.Cmd) {
 	item := m.list.SelectedItem()
 	if item == nil {
 		return m, nil
@@ -123,7 +123,7 @@ func (m model) enterEditMenu() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) toggleDone() (tea.Model, tea.Cmd) {
+func (m Model) toggleDone() (tea.Model, tea.Cmd) {
 	item := m.list.SelectedItem()
 	if item == nil {
 		return m, nil
@@ -146,7 +146,7 @@ func (m model) toggleDone() (tea.Model, tea.Cmd) {
 	return m, m.saveTasksCmd(tasks, statusText)
 }
 
-func (m model) taskSaveError(msg TasksSaveErrorMsg) (tea.Model, tea.Cmd) {
+func (m Model) taskSaveError(msg TasksSaveErrorMsg) (tea.Model, tea.Cmd) {
 	cmd := m.list.NewStatusMessage(
 		m.renderErrorStatus(statusMsgSaveError),
 	)
@@ -154,14 +154,14 @@ func (m model) taskSaveError(msg TasksSaveErrorMsg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) taskSaved(msg TasksSavedMsg) (tea.Model, tea.Cmd) {
+func (m Model) taskSaved(msg TasksSavedMsg) (tea.Model, tea.Cmd) {
 	cmd := m.list.NewStatusMessage(
 		m.renderSuccessStatus(msg.msg),
 	)
 	return m, cmd
 }
 
-func (m model) deleteTask() (tea.Model, tea.Cmd) {
+func (m Model) deleteTask() (tea.Model, tea.Cmd) {
 	index := m.list.Index()
 	taskItem, ok := m.list.SelectedItem().(task.Task)
 	if !ok {
@@ -187,7 +187,7 @@ func (m model) deleteTask() (tea.Model, tea.Cmd) {
 // existing task in the list or inserting a new one. It then switches
 // back to the list state and returns a command that persists the
 // updated tasks and shows an appropriate status message.
-func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
+func (m Model) saveTask(msg editmenu.SaveTaskMsg) (Model, tea.Cmd) {
 	t := task.NewWithOptions(
 		msg.Title,
 		msg.Desc,
@@ -232,7 +232,7 @@ func (m model) saveTask(msg editmenu.SaveTaskMsg) (model, tea.Cmd) {
 // application is in the list state. It is responsible for responding
 // to list-specific keybindings (such as creating a new task) and for
 // delegating messages down to the list sub-model.
-func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
+func (m Model) stateListUpdate(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		// Disable other keys if actively filtering.
@@ -256,7 +256,7 @@ func (m model) stateListUpdate(msg tea.Msg) (model, tea.Cmd) {
 // stateEditUpdate handles messages that should be processed while the
 // application is in the edit state. It delegates the message to the
 // edit menu sub-model and returns the updated root model and command.
-func (m model) stateEditUpdate(msg tea.Msg) (model, tea.Cmd) {
+func (m Model) stateEditUpdate(msg tea.Msg) (Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.editmenu, cmd = m.editmenu.Update(msg)
 	return m, cmd

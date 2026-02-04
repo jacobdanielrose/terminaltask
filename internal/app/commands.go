@@ -6,7 +6,7 @@ import (
 )
 
 // saveTasksCmd returns a command that persists the given tasks
-func (m model) saveTasksCmd(tasks []task.Task, msg string) tea.Cmd {
+func (m Model) saveTasksCmd(tasks []task.Task, msg string) tea.Cmd {
 	return func() tea.Msg {
 		err := m.service.SaveTasks(tasks)
 		if err != nil {
@@ -17,7 +17,7 @@ func (m model) saveTasksCmd(tasks []task.Task, msg string) tea.Cmd {
 }
 
 // loadTasksCmd returns a command that loads tasks from the service.
-func (m model) loadTasksCmd() tea.Cmd {
+func (m Model) loadTasksCmd() tea.Cmd {
 	return func() tea.Msg {
 		tasks, err := m.service.LoadTasks()
 		if err != nil {

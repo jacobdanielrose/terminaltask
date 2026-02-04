@@ -94,7 +94,7 @@ func TestNewModelInitialState(t *testing.T) {
 	mAny := NewModel(cfg, svc)
 
 	// NewModel returns tea.Model; assert and inspect concrete model.
-	m, ok := mAny.(model)
+	m, ok := mAny.(Model)
 	if !ok {
 		t.Fatalf("NewModel returned %T, want app.model", mAny)
 	}

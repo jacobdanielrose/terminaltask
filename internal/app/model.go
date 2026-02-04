@@ -92,10 +92,10 @@ func newAppStyles() AppStyles {
 	}
 }
 
-// model is the root Bubble Tea model for terminaltask. It coordinates
+// Model is the root Bubble Tea Model for terminaltask. It coordinates
 // the task list, edit menu, current application state, styles, and
 // backing task service.
-type model struct {
+type Model struct {
 	// list is the main task list view.
 	list list.Model
 
@@ -129,7 +129,7 @@ func NewModel(cfg config.Config, service taskservice.Service) tea.Model {
 
 	listModel = configureListModel(listModel, appStyles.List)
 
-	return model{
+	return Model{
 		list:     listModel,
 		editmenu: editmenuModel,
 		state:    stateList,

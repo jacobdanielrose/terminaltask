@@ -1,7 +1,7 @@
 package app
 
 // View renders the root application view based on the current state.
-func (m model) View() string {
+func (m Model) View() string {
 	switch m.state {
 	case stateList:
 		return m.styles.Frame.Render(m.list.View())

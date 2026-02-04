@@ -72,7 +72,7 @@ func TestSaveTasksCmd_Success(t *testing.T) {
 	}
 
 	var saved []task.Task
-	m := model{
+	m := Model{
 		service: &commandsFakeService{
 			saveTasksFn: func(ts []task.Task) error {
 				saved = append(saved, ts...)
@@ -112,7 +112,7 @@ func TestSaveTasksCmd_Success(t *testing.T) {
 func TestSaveTasksCmd_Error(t *testing.T) {
 	saveErr := errors.New("save failed")
 
-	m := model{
+	m := Model{
 		service: &commandsFakeService{
 			saveTasksFn: func([]task.Task) error {
 				return saveErr
@@ -141,7 +141,7 @@ func TestLoadTasksCmd_Success(t *testing.T) {
 		task.NewWithOptions("t2", "d2", task.Task{}.DueDate, true),
 	}
 
-	m := model{
+	m := Model{
 		service: &commandsFakeService{
 			loadTasksFn: func() ([]task.Task, error) {
 				return expectedTasks, nil
@@ -174,7 +174,7 @@ func TestLoadTasksCmd_Success(t *testing.T) {
 func TestLoadTasksCmd_Error(t *testing.T) {
 	loadErr := errors.New("load failed")
 
-	m := model{
+	m := Model{
 		service: &commandsFakeService{
 			loadTasksFn: func() ([]task.Task, error) {
 				return nil, loadErr

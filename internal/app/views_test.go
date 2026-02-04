@@ -16,7 +16,7 @@ func TestView_StateListUsersListView(t *testing.T) {
 
 	l.SetItems([]list.Item{task.Task{TitleStr: "one"}})
 
-	m := model{
+	m := Model{
 		list:   l,
 		state:  stateList,
 		styles: AppStyles{Frame: lipgloss.NewStyle()},
@@ -38,7 +38,7 @@ func TestView_StateEditUsesEditmenuView(t *testing.T) {
 	tk := task.Task{TitleStr: "edit-me"}
 	em := editmenu.New(tk)
 
-	m := model{
+	m := Model{
 		editmenu: em,
 		state:    stateEdit,
 		styles:   AppStyles{Frame: lipgloss.NewStyle()}, // no-op frame
