@@ -29,6 +29,9 @@ brew tap jacobdanielrose/homebrew-tap
 brew install --cask terminaltask
 ```
 
+After installation, macOS may block the app the first time you try to run it because it is from an unidentified developer.  
+If this happens, open **System Settings → Privacy & Security**, scroll down to the security section, and explicitly allow `terminaltask` to run. Once approved, you can launch it normally from your terminal.
+
 ### Building from Source
 
 Ensure you have Go installed (version 1.20 or higher is recommended).
