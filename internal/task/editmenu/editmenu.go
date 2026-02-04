@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	datepicker "github.com/ethanefung/bubble-datepicker"
 	"github.com/google/uuid"
 	"github.com/jacobdanielrose/terminaltask/internal/task"
 )
@@ -116,11 +117,19 @@ type EditTaskKeyMap struct {
 	SaveTask       key.Binding
 	Help           key.Binding
 	Quit           key.Binding
+
+	DateUp        key.Binding
+	DateDown      key.Binding
+	DateNext      key.Binding
+	DatePrevious  key.Binding
+	DateFocusNext key.Binding
+	DateFocusPrev key.Binding
 }
 
 // newEditTaskKeyMap constructs the default key bindings for the
 // edit menu.
 func newEditTaskKeyMap() *EditTaskKeyMap {
+	dpk := datepicker.DefaultKeyMap()
 	return &EditTaskKeyMap{
 		SaveField: key.NewBinding(
 			key.WithKeys("enter"),
@@ -138,6 +147,12 @@ func newEditTaskKeyMap() *EditTaskKeyMap {
 			key.WithKeys("ctrl+o"),
 			key.WithHelp("ctrl+o", "help"),
 		),
+		DateUp:        dpk.Up,
+		DateDown:      dpk.Down,
+		DateNext:      dpk.Right,
+		DatePrevious:  dpk.Left,
+		DateFocusNext: dpk.FocusNext,
+		DateFocusPrev: dpk.FocusPrev,
 	}
 }
 
@@ -147,7 +162,7 @@ func (e EditTaskKeyMap) ShortHelp() []key.Binding {
 		e.SaveField,
 		e.EscapeEditMode,
 		e.SaveTask,
-		// e.Help,
+		e.Help,
 	}
 }
 
@@ -158,8 +173,14 @@ func (e EditTaskKeyMap) FullHelp() [][]key.Binding {
 			e.SaveField,
 			e.EscapeEditMode,
 			e.SaveTask,
-			// e.Help,
+			e.Help,
 			e.Quit,
+		},
+		{
+			e.DateUp,
+			e.DateDown,
+			e.DateNext,
+			e.DatePrevious,
 		},
 	}
 }

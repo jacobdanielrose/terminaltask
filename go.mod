@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 )
 
-replace github.com/ethanefung/bubble-datepicker => github.com/jacobdanielrose/bubble-datepicker v0.0.1
+replace github.com/ethanefung/bubble-datepicker => github.com/jacobdanielrose/bubble-datepicker v0.0.3
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
